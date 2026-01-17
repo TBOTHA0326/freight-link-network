@@ -2,18 +2,18 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Truck, Eye, EyeOff, AlertCircle, Check } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Truck, Eye, EyeOff, AlertCircle, Check, Mail, ArrowRight } from 'lucide-react';
 import { signUp } from '@/database/queries/auth';
 import type { UserRole } from '@/database/types';
 
 function RegisterForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
 
   // Form data
   const [role, setRole] = useState<UserRole>('transporter');
@@ -48,13 +48,17 @@ function RegisterForm() {
     setError(null);
 
     try {
-      await signUp(email, password, fullName, role);
+      const result = await signUp(email, password, fullName, role);
       
-      // Redirect to appropriate dashboard
-      if (role === 'supplier') {
-        router.push('/dashboard/supplier');
-      } else {
-        router.push('/dashboard/transporter');
+      // Check if email confirmation is required
+      if (result.user && !result.session) {
+        // Email confirmation required - show success message
+        setRegistrationComplete(true);
+      } else if (result.session) {
+        // Auto-confirmed (e.g., in development) - redirect to dashboard
+        window.location.href = role === 'supplier' 
+          ? '/dashboard/supplier' 
+          : '/dashboard/transporter';
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account');
@@ -68,6 +72,92 @@ function RegisterForm() {
     { label: 'Contains a number', met: /\d/.test(password) },
     { label: 'Contains uppercase letter', met: /[A-Z]/.test(password) },
   ];
+
+  // Show email verification screen after successful registration
+  if (registrationComplete) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-200 py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Link href="/" className="flex items-center gap-2 w-fit">
+              <div className="w-10 h-10 bg-[#06082C] rounded-lg flex items-center justify-center">
+                <Truck className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-bold text-[#06082C]">
+                Freight Link Network
+              </span>
+            </Link>
+          </div>
+        </header>
+
+        {/* Email Verification Message */}
+        <main className="flex-1 flex items-center justify-center py-12 px-4">
+          <div className="w-full max-w-md">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
+              {/* Mail Icon */}
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Mail className="w-10 h-10 text-blue-600" />
+              </div>
+
+              {/* Message */}
+              <h1 className="text-2xl font-bold text-[#06082C] mb-3">
+                Check Your Email
+              </h1>
+              <p className="text-gray-600 mb-2">
+                We&apos;ve sent a verification link to:
+              </p>
+              <p className="font-semibold text-[#06082C] mb-6">
+                {email}
+              </p>
+              <p className="text-gray-600 mb-8">
+                Click the link in the email to verify your account and complete 
+                your registration. The link will expire in 24 hours.
+              </p>
+
+              {/* Tips */}
+              <div className="bg-gray-50 rounded-xl p-4 mb-8 text-left">
+                <h3 className="font-semibold text-[#06082C] mb-3">Didn&apos;t receive the email?</h3>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    <span>Check your spam or junk folder</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    <span>Make sure you entered the correct email</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    <span>Wait a few minutes and try again</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Back to Login */}
+              <Link
+                href="/login"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#06082C] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#0a0f4a] transition-colors"
+              >
+                Go to Login
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+
+              {/* Support Link */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="text-sm text-gray-500">
+                  Need help?{' '}
+                  <Link href="/contact" className="text-[#06082C] font-medium hover:underline">
+                    Contact Support
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
