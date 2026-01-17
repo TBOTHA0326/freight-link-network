@@ -71,8 +71,8 @@ export interface Company {
   created_by: string | null;
 }
 
-// Document type
-export interface Document {
+// Document type (named DocumentRecord to avoid conflict with DOM Document)
+export interface DocumentRecord {
   id: string;
   company_id: string;
   truck_id: string | null;
@@ -93,6 +93,9 @@ export interface Document {
   updated_at: string;
   uploaded_by: string | null;
 }
+
+// Alias for backward compatibility
+export type Document = DocumentRecord;
 
 // Truck type
 export interface Truck {
@@ -370,44 +373,55 @@ export interface Database {
     Tables: {
       profiles: {
         Row: Profile;
-        Insert: Omit<Profile, 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<Profile>;
+        Update: Partial<Profile>;
+        Relationships: [];
       };
       companies: {
         Row: Company;
-        Insert: Omit<Company, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Company, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<Company>;
+        Update: Partial<Company>;
+        Relationships: [];
       };
       documents: {
-        Row: Document;
-        Insert: Omit<Document, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Document, 'id' | 'created_at' | 'updated_at'>>;
+        Row: DocumentRecord;
+        Insert: Partial<DocumentRecord>;
+        Update: Partial<DocumentRecord>;
+        Relationships: [];
       };
       trucks: {
         Row: Truck;
-        Insert: Omit<Truck, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Truck, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<Truck>;
+        Update: Partial<Truck>;
+        Relationships: [];
       };
       trailers: {
         Row: Trailer;
-        Insert: Omit<Trailer, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Trailer, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<Trailer>;
+        Update: Partial<Trailer>;
+        Relationships: [];
       };
       drivers: {
         Row: Driver;
-        Insert: Omit<Driver, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Driver, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<Driver>;
+        Update: Partial<Driver>;
+        Relationships: [];
       };
       loads: {
         Row: Load;
-        Insert: Omit<Load, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Load, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<Load>;
+        Update: Partial<Load>;
+        Relationships: [];
       };
       admin_stats: {
         Row: AdminStats;
-        Insert: Omit<AdminStats, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<AdminStats, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<AdminStats>;
+        Update: Partial<AdminStats>;
+        Relationships: [];
       };
+    };
+    Views: {
+      [_ in never]: never;
     };
     Functions: {
       get_admin_dashboard_stats: {
@@ -420,7 +434,7 @@ export interface Database {
       };
       review_document: {
         Args: { doc_id: string; new_status: DocumentStatus; reason?: string };
-        Returns: Document;
+        Returns: DocumentRecord;
       };
       review_load: {
         Args: { load_id: string; new_status: LoadStatus; reason?: string };
@@ -434,6 +448,12 @@ export interface Database {
         Args: { user_role_param: UserRole; user_company_id?: string };
         Returns: MapLoad[];
       };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }
