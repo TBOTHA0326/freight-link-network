@@ -14,11 +14,6 @@ export async function signUp(
 ) {
   const supabase = createClient();
   
-  // Determine the base URL for email confirmation redirect
-  const baseUrl = typeof window !== 'undefined' 
-    ? window.location.origin 
-    : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -27,7 +22,6 @@ export async function signUp(
         full_name: fullName,
         role: role,
       },
-      emailRedirectTo: `${baseUrl}/auth/confirm`,
     },
   });
 

@@ -14,30 +14,38 @@ export default function AuthConfirmPage() {
   useEffect(() => {
     const handleEmailConfirmation = async () => {
       try {
-        // Check if we have hash params (Supabase sends tokens in hash fragment)
+        // Get the full URL including hash
+        const fullUrl = window.location.href;
+        
+        // Check for hash params first (Supabase often sends tokens here)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
+        const errorInHash = hashParams.get('error');
+        const errorDescInHash = hashParams.get('error_description');
 
         // Also check query params
         const searchParams = new URLSearchParams(window.location.search);
         const tokenHash = searchParams.get('token_hash');
         const tokenType = searchParams.get('type');
-        const code = searchParams.get('code');
         const error = searchParams.get('error');
         const errorDescription = searchParams.get('error_description');
 
+        console.log('Auth confirm - URL:', fullUrl);
+        console.log('Hash params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, errorInHash });
+        console.log('Query params:', { tokenHash, tokenType, error });
+
         // Handle explicit errors
-        if (error) {
-          console.error('Auth error:', error, errorDescription);
+        if (error || errorInHash) {
+          console.error('Auth error:', error || errorInHash, errorDescription || errorDescInHash);
           setStatus('error');
-          setMessage(errorDescription || 'Verification failed');
+          setMessage(errorDescription || errorDescInHash || 'Verification failed');
           return;
         }
 
-        // If we have access_token in hash (implicit flow)
+        // If we have access_token and refresh_token in hash (this is the default Supabase flow)
         if (accessToken && refreshToken) {
+          console.log('Setting session from hash tokens...');
           const { error: sessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
@@ -50,13 +58,16 @@ export default function AuthConfirmPage() {
             return;
           }
 
+          console.log('Session set successfully!');
           setStatus('success');
-          setTimeout(() => router.push('/auth/verified'), 1000);
+          setMessage('Email verified! Redirecting...');
+          setTimeout(() => router.push('/auth/verified'), 1500);
           return;
         }
 
-        // If we have token_hash in query params
+        // If we have token_hash in query params (alternative flow)
         if (tokenHash && tokenType) {
+          console.log('Verifying OTP...');
           const { error: verifyError } = await supabase.auth.verifyOtp({
             token_hash: tokenHash,
             type: tokenType as 'signup' | 'email' | 'recovery' | 'invite' | 'magiclink' | 'email_change',
@@ -70,37 +81,25 @@ export default function AuthConfirmPage() {
           }
 
           setStatus('success');
-          setTimeout(() => router.push('/auth/verified'), 1000);
+          setMessage('Email verified! Redirecting...');
+          setTimeout(() => router.push('/auth/verified'), 1500);
           return;
         }
 
-        // If we have code (PKCE flow)
-        if (code) {
-          const { error: codeError } = await supabase.auth.exchangeCodeForSession(code);
-
-          if (codeError) {
-            console.error('Code exchange error:', codeError);
-            setStatus('error');
-            setMessage(codeError.message || 'Verification failed');
-            return;
-          }
-
-          setStatus('success');
-          setTimeout(() => router.push('/auth/verified'), 1000);
-          return;
-        }
-
-        // Check if user is already authenticated (email auto-confirmed)
+        // Check if user is already authenticated
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
+          console.log('User already has session');
           setStatus('success');
-          setTimeout(() => router.push('/auth/verified'), 1000);
+          setMessage('Already verified! Redirecting...');
+          setTimeout(() => router.push('/auth/verified'), 1500);
           return;
         }
 
         // No valid params found
+        console.log('No valid auth params found in URL');
         setStatus('error');
-        setMessage('Invalid or expired verification link');
+        setMessage('Invalid or expired verification link. Please try signing up again.');
 
       } catch (err) {
         console.error('Confirmation error:', err);
@@ -157,7 +156,7 @@ export default function AuthConfirmPage() {
                   Email Verified!
                 </h1>
                 <p className="text-gray-600">
-                  Redirecting you...
+                  {message}
                 </p>
               </>
             )}
@@ -175,12 +174,20 @@ export default function AuthConfirmPage() {
                 <p className="text-gray-600 mb-6">
                   {message}
                 </p>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center justify-center gap-2 bg-[#06082C] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#0a0f4a] transition-colors"
-                >
-                  Go to Login
-                </Link>
+                <div className="space-y-3">
+                  <Link
+                    href="/register"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#06082C] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#0a0f4a] transition-colors"
+                  >
+                    Try Signing Up Again
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-gray-100 text-[#06082C] py-3 px-6 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  >
+                    Go to Login
+                  </Link>
+                </div>
               </>
             )}
           </div>
