@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { DocumentStatus } from '@/database/types';
 import { 
   FileCheck, 
   Search, 
@@ -56,7 +57,7 @@ export default function AdminApprovalsPage() {
     }
   };
 
-  const updateDocumentStatus = async (docId: string, status: string) => {
+  const updateDocumentStatus = async (docId: string, status: DocumentStatus) => {
     try {
       const { error } = await supabase
         .from('documents')
