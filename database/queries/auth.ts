@@ -27,7 +27,7 @@ export async function signUp(
         full_name: fullName,
         role: role,
       },
-      emailRedirectTo: `${baseUrl}/auth/callback`,
+      emailRedirectTo: `${baseUrl}/auth/confirm`,
     },
   });
 

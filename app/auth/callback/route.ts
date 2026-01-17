@@ -14,7 +14,21 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code');
   const token_hash = requestUrl.searchParams.get('token_hash');
   const type = requestUrl.searchParams.get('type');
+  const error = requestUrl.searchParams.get('error');
+  const error_description = requestUrl.searchParams.get('error_description');
   const next = requestUrl.searchParams.get('next') ?? '/auth/verified';
+
+  // If there's an error from Supabase, redirect to error page
+  if (error) {
+    console.error('Auth error from Supabase:', error, error_description);
+    return NextResponse.redirect(new URL('/auth/error', requestUrl.origin));
+  }
+
+  // If no server-side params, redirect to client-side handler
+  // This handles cases where tokens are in the hash fragment
+  if (!code && !token_hash) {
+    return NextResponse.redirect(new URL('/auth/confirm', requestUrl.origin));
+  }
 
   const cookieStore = await cookies();
   
@@ -38,29 +52,31 @@ export async function GET(request: NextRequest) {
 
   // Handle email confirmation with token_hash (email link verification)
   if (token_hash && type) {
-    const { error } = await supabase.auth.verifyOtp({
+    const { error: verifyError } = await supabase.auth.verifyOtp({
       token_hash,
       type: type as 'signup' | 'email' | 'recovery' | 'invite' | 'magiclink' | 'email_change',
     });
 
-    if (!error) {
+    if (!verifyError) {
       return NextResponse.redirect(new URL(next, requestUrl.origin));
     }
     
-    console.error('OTP verification error:', error);
+    console.error('OTP verification error:', verifyError);
+    return NextResponse.redirect(new URL('/auth/error', requestUrl.origin));
   }
 
   // Handle PKCE flow with code
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error: codeError } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
+    if (!codeError) {
       return NextResponse.redirect(new URL(next, requestUrl.origin));
     }
     
-    console.error('Code exchange error:', error);
+    console.error('Code exchange error:', codeError);
+    return NextResponse.redirect(new URL('/auth/error', requestUrl.origin));
   }
 
-  // If there's an error or no valid parameters, redirect to error page
+  // Fallback to error page
   return NextResponse.redirect(new URL('/auth/error', requestUrl.origin));
 }
