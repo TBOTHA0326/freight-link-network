@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { Truck, Eye, EyeOff, AlertCircle, Check, Mail, ArrowRight, Home } from 'lucide-react';
+import { Truck, Eye, EyeOff, AlertCircle, Check, CheckCircle, ArrowRight, Home } from 'lucide-react';
 import { signUp } from '@/database/queries/auth';
 import type { UserRole } from '@/database/types';
 
@@ -51,17 +51,17 @@ function RegisterForm() {
     try {
       const result = await signUp(email, password, fullName, role);
       
-      // With email confirmation disabled, user should have a session immediately
-      if (result.session) {
-        // Redirect to appropriate dashboard
-        window.location.href = role === 'supplier' 
-          ? '/dashboard/supplier' 
-          : '/dashboard/transporter';
-      } else if (result.user && !result.session) {
-        // Fallback: If email confirmation is still enabled, show message
+      // Registration successful - show thank you screen then redirect
+      if (result.user) {
         setRegistrationComplete(true);
+        // Auto-redirect after 5 seconds
+        setTimeout(() => {
+          window.location.href = role === 'supplier' 
+            ? '/dashboard/supplier' 
+            : '/dashboard/transporter';
+        }, 5000);
       } else {
-        setError('Registration completed but no session created. Please try logging in.');
+        setError('Registration failed. Please try again.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account');
@@ -76,8 +76,10 @@ function RegisterForm() {
     { label: 'Contains uppercase letter', met: /[A-Z]/.test(password) },
   ];
 
-  // Show email verification screen after successful registration
+  // Show thank you screen after successful registration
   if (registrationComplete) {
+    const dashboardUrl = role === 'supplier' ? '/dashboard/supplier' : '/dashboard/transporter';
+    
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
       <Link href="/" aria-label="Back to home" className="absolute left-4 top-4 z-50 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white text-[#06082C] font-semibold shadow-md hover:bg-gray-100 transition-colors">
@@ -85,70 +87,50 @@ function RegisterForm() {
         <span className="ml-1">Home</span>
       </Link>
 
-        {/* Email Verification Message */}
+        {/* Thank You Message */}
         <main className="flex-1 flex items-center justify-center py-12 px-4">
           <div className="w-full max-w-md">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
-              {/* Mail Icon */}
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Mail className="w-10 h-10 text-blue-600" />
+              {/* Success Checkmark */}
+              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                <CheckCircle className="w-14 h-14 text-green-600" />
               </div>
 
               {/* Message */}
-              <h1 className="text-2xl font-bold text-[#06082C] mb-3">
-                Check Your Email
+              <h1 className="text-3xl font-bold text-[#06082C] mb-3">
+                Thank You!
               </h1>
-              <p className="text-gray-600 mb-2">
-                We&apos;ve sent a verification link to:
+              <p className="text-lg text-gray-600 mb-2">
+                Your account has been created successfully.
               </p>
-              <p className="font-semibold text-[#06082C] mb-6">
-                {email}
-              </p>
-              <p className="text-gray-600 mb-8">
-                Click the link in the email to verify your account and complete 
-                your registration. The link will expire in 24 hours.
+              <p className="text-gray-500 mb-8">
+                Redirecting you to your dashboard in a few seconds...
               </p>
 
-              {/* Tips */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-8 text-left">
-                <h3 className="font-semibold text-[#06082C] mb-3">Didn&apos;t receive the email?</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-400">•</span>
-                    <span>Check your spam or junk folder</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-400">•</span>
-                    <span>Make sure you entered the correct email</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-400">•</span>
-                    <span>Wait a few minutes and try again</span>
-                  </li>
-                </ul>
+              {/* Loading bar */}
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-8 overflow-hidden">
+                <div className="bg-green-500 h-2 rounded-full animate-[loading_5s_linear_forwards]" style={{ width: '0%', animation: 'loading 5s linear forwards' }} />
               </div>
 
-              {/* Back to Login */}
+              {/* Manual redirect button */}
               <Link
-                href="/login"
+                href={dashboardUrl}
                 className="w-full inline-flex items-center justify-center gap-2 bg-[#06082C] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#0a0f4a] transition-colors"
               >
-                Go to Login
+                Go to Dashboard Now
                 <ArrowRight className="w-5 h-5" />
               </Link>
-
-              {/* Support Link */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <p className="text-sm text-gray-500">
-                  Need help?{' '}
-                  <Link href="/contact" className="text-[#06082C] font-medium hover:underline">
-                    Contact Support
-                  </Link>
-                </p>
-              </div>
             </div>
           </div>
         </main>
+
+        {/* CSS for loading animation */}
+        <style jsx>{`
+          @keyframes loading {
+            from { width: 0%; }
+            to { width: 100%; }
+          }
+        `}</style>
       </div>
     );
   }
