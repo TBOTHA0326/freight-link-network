@@ -194,7 +194,7 @@ export default function AdminNewLoadPage() {
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="e.g., Steel Coils - Johannesburg to Durban"
+                placeholder="e.g., Maize - Johannesburg to Durban"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C]"
               />
             </div>
@@ -212,7 +212,7 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cargo Type
+                Load Type
               </label>
               <input
                 type="text"
@@ -397,7 +397,7 @@ export default function AdminNewLoadPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Pickup Date
+                Available From:
               </label>
               <input
                 type="date"
@@ -408,7 +408,7 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Delivery Date
+                Available Until:
               </label>
               <input
                 type="date"
@@ -419,7 +419,7 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Budget (ZAR)
+                Price (ZAR)
               </label>
               <input
                 type="number"
@@ -452,7 +452,7 @@ export default function AdminNewLoadPage() {
                 value={formData.special_requirements}
                 onChange={(e) => setFormData({ ...formData, special_requirements: e.target.value })}
                 rows={2}
-                placeholder="Any special handling, equipment, or documentation requirements..."
+                placeholder="Any special documentation or other requirements..."
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C]"
               />
             </div>

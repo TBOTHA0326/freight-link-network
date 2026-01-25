@@ -209,7 +209,7 @@ export default function NewLoadPage() {
                     value={formData.title}
                     onChange={handleChange}
                     required
-                    placeholder="e.g., Steel Coils from Johannesburg to Durban"
+                    placeholder="e.g., Maize Coils from Johannesburg to Durban"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C] focus:border-transparent"
                   />
                 </div>
@@ -231,7 +231,7 @@ export default function NewLoadPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Cargo Type
+                      Load Type
                     </label>
                     <input
                       type="text"
@@ -328,7 +328,7 @@ export default function NewLoadPage() {
                     value={formData.special_instructions}
                     onChange={handleChange}
                     rows={2}
-                    placeholder="Any special handling or delivery instructions"
+                    placeholder="Any special documentation or other requirements..."
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C] focus:border-transparent"
                   />
                 </div>
@@ -393,7 +393,7 @@ export default function NewLoadPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Pickup Date
+                      Available From:
                     </label>
                     <input
                       type="date"
@@ -488,7 +488,7 @@ export default function NewLoadPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Delivery Date
+                      Available Until:
                     </label>
                     <input
                       type="date"

@@ -75,18 +75,19 @@ export default function Sidebar() {
     <aside className="fixed left-0 top-0 h-full w-64 bg-[#06082C] text-white z-40 flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" aria-label="Freight Link Network home" className="flex items-center gap-3">
           <div className="w-10 h-10 relative flex items-center justify-center">
             <Image
-              src="/FLNSITELOGO.png"
-              alt="Freight Link Network"
-              width={40}
-              height={40}
+              src="/FLNSITELOGOSMALL.png"
+              alt="Freight Link Network logo"
+              width={32}
+              height={32}
               className="object-contain"
+              onError={(e: any) => { e.currentTarget.src = '/FLNSITELOGO.png'; }}
             />
           </div>
           <div>
-            <span className="text-lg font-bold">Freight Link</span>
+            <span className="sr-only">Freight Link Network</span>
             <span className="block text-xs text-gray-400">{roleLabel} Portal</span>
           </div>
         </Link>

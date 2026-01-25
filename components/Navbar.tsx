@@ -22,45 +22,51 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 relative flex items-center justify-center">
+            <Link href="/" aria-label="Freight Link Network home" className="flex items-center gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 relative flex items-center justify-center">
                 <Image
-                  src="/FLNSITELOGO.png"
-                  alt="FL logo"
-                  width={40}
-                  height={40}
+                  src="/FLNSITELOGOSMALL.png"
+                  alt="Freight Link Network logo"
+                  width={48}
+                  height={48}
                   className="object-contain"
                   priority
+                  onError={(e: any) => { e.currentTarget.src = '/FLNSITELOGO.png'; }}
                 />
               </div>
+              <span className="text-white font-bold text-lg md:text-2xl leading-tight whitespace-nowrap">
+                Freight Link Network
+              </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm font-medium transition-colors ${
-                  pathname === link.href
-                    ? 'text-white'
-                    : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`text-sm font-medium transition-colors ${isActive ? 'text-white border-b-2 border-white pb-1 font-semibold' : 'text-gray-300 hover:text-white'}`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             <div className="flex items-center gap-4">
               <Link
                 href="/login"
-                className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                aria-current={pathname.startsWith('/login') ? 'page' : undefined}
+                className={`text-sm font-medium transition-colors ${pathname.startsWith('/login') ? 'text-white border-b-2 border-white pb-1 font-semibold' : 'text-gray-300 hover:text-white'}`}
               >
                 Log In
               </Link>
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-white text-[#06082C] hover:bg-gray-100 transition-colors"
+                aria-current={pathname.startsWith('/register') ? 'page' : undefined}
+                className={`inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium ${pathname.startsWith('/register') ? 'bg-white text-[#06082C] ring-2 ring-offset-1 ring-white' : 'bg-white text-[#06082C] hover:bg-gray-100'} transition-colors`}
               >
                 Get Started
               </Link>
@@ -87,32 +93,34 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#0a0e40] border-t border-[#1a1e4c]">
           <div className="px-4 py-4 space-y-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block text-sm font-medium transition-colors ${
-                  pathname === link.href
-                    ? 'text-white'
-                    : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`block text-sm font-medium transition-colors ${isActive ? 'text-white font-semibold' : 'text-gray-300 hover:text-white'}`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             <hr className="border-[#1a1e4c]" />
             <Link
               href="/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-medium text-gray-300 hover:text-white transition-colors"
+              aria-current={pathname.startsWith('/login') ? 'page' : undefined}
+              className={`block text-sm font-medium transition-colors ${pathname.startsWith('/login') ? 'text-white font-semibold' : 'text-gray-300 hover:text-white'}`}
             >
               Log In
             </Link>
             <Link
               href="/register"
               onClick={() => setMobileMenuOpen(false)}
-              className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium bg-white text-[#06082C] hover:bg-gray-100 transition-colors"
+              aria-current={pathname.startsWith('/register') ? 'page' : undefined}
+              className={`block w-full text-center px-4 py-2 rounded-lg text-sm font-medium ${pathname.startsWith('/register') ? 'bg-white text-[#06082C] ring-2 ring-offset-1 ring-white' : 'bg-white text-[#06082C] hover:bg-gray-100'} transition-colors`}
             >
               Get Started
             </Link>

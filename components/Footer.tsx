@@ -9,17 +9,17 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <Link href="/" className="flex items-center gap-3 mb-4">
+            <Link href="/" aria-label="Freight Link Network home" className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 relative flex items-center justify-center">
                 <Image
-                  src="/FLNSITELOGO.png"
-                  alt="Freight Link Network"
-                  width={40}
-                  height={40}
+                  src="/FLNSITELOGOSMALL.png"
+                  alt="Freight Link Network logo"
+                  width={36}
+                  height={36}
                   className="object-contain"
                 />
               </div>
-              <span className="text-xl font-bold">Freight Link Network</span>
+              <span className="sr-only">Freight Link Network</span>
             </Link>
             <p className="text-gray-400 max-w-md">
               Connecting transporters and suppliers across South Africa. 

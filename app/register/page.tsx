@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { Truck, Eye, EyeOff, AlertCircle, Check, Mail, ArrowRight } from 'lucide-react';
+import { Truck, Eye, EyeOff, AlertCircle, Check, Mail, ArrowRight, Home } from 'lucide-react';
 import { signUp } from '@/database/queries/auth';
 import type { UserRole } from '@/database/types';
 
@@ -80,25 +80,10 @@ function RegisterForm() {
   if (registrationComplete) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 py-4">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Link href="/" className="flex items-center gap-3 w-fit">
-              <div className="w-10 h-10 relative flex items-center justify-center">
-                <Image
-                  src="/FLNSITELOGO.png"
-                  alt="Freight Link Network"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
-              </div>
-              <span className="text-xl font-bold text-[#06082C]">
-                Freight Link Network
-              </span>
-            </Link>
-          </div>
-        </header>
+      <Link href="/" aria-label="Back to home" className="absolute left-4 top-4 z-50 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white text-[#06082C] font-semibold shadow-md hover:bg-gray-100 transition-colors">
+        <Home className="w-4 h-4" />
+        <span className="ml-1">Home</span>
+      </Link>
 
         {/* Email Verification Message */}
         <main className="flex-1 flex items-center justify-center py-12 px-4">
@@ -170,25 +155,11 @@ function RegisterForm() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3 w-fit">
-            <div className="w-10 h-10 relative flex items-center justify-center">
-              <Image
-                src="/FLNSITELOGO.png"
-                alt="Freight Link Network"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-            </div>
-            <span className="text-xl font-bold text-[#06082C]">
-              Freight Link Network
-            </span>
-          </Link>
-        </div>
-      </header>
+      <Link href="/" aria-label="Back to home" className="absolute left-4 top-4 z-50 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white text-[#06082C] font-semibold shadow-md hover:bg-gray-100 transition-colors">
+        <Home className="w-4 h-4" />
+        <span className="ml-1">Home</span>
+      </Link>
+
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center py-12 px-4">
