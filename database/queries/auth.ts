@@ -14,6 +14,9 @@ export async function signUp(
 ) {
   const supabase = createClient();
   
+  // Get the current origin for email redirect
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -22,6 +25,7 @@ export async function signUp(
         full_name: fullName,
         role: role,
       },
+      emailRedirectTo: `${origin}/auth/callback`,
     },
   });
 

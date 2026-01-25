@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Truck, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { signIn } from '@/database/queries/auth';
 import { createClient } from '@/lib/supabaseClient';
 
@@ -21,55 +22,40 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      console.log('Attempting sign in...');
-      const signInResult = await signIn(email, password);
-      console.log('Sign in result:', signInResult);
+      // Sign in - this returns the session directly
+      const { session, user } = await signIn(email, password);
       
-      // Get user profile to determine redirect
-      const supabase = createClient();
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      console.log('User:', user, 'Error:', userError);
-      
-      if (userError) {
-        throw new Error(userError.message);
+      if (!session || !user) {
+        throw new Error('Sign in failed - no session returned');
       }
       
-      if (user) {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
+      // Get profile to determine redirect - use the user from sign in response
+      const supabase = createClient();
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
 
-        console.log('Profile:', profile, 'Error:', profileError);
+      if (profileError) {
+        // If profile doesn't exist, default to transporter dashboard
+        console.log('Profile not found, defaulting to transporter');
+        router.push('/dashboard/transporter');
+        return;
+      }
 
-        if (profileError) {
-          // If profile doesn't exist, default to transporter dashboard
-          console.log('Profile error, defaulting to transporter');
-          router.push('/dashboard/transporter');
-          return;
-        }
-
-        const userRole = (profile as { role: string } | null)?.role;
-        console.log('User role:', userRole);
-        
-        if (userRole === 'admin') {
-          console.log('Redirecting to admin dashboard');
-          router.push('/admin/dashboard');
-        } else if (userRole === 'supplier') {
-          console.log('Redirecting to supplier dashboard');
-          router.push('/dashboard/supplier');
-        } else {
-          console.log('Redirecting to transporter dashboard');
-          router.push('/dashboard/transporter');
-        }
+      const userRole = profile?.role;
+      
+      if (userRole === 'admin') {
+        router.push('/admin/dashboard');
+      } else if (userRole === 'supplier') {
+        router.push('/dashboard/supplier');
       } else {
-        throw new Error('No user returned after sign in');
+        router.push('/dashboard/transporter');
       }
     } catch (err) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign in');
-    } finally {
       setLoading(false);
     }
   };
@@ -79,9 +65,15 @@ export default function LoginPage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2 w-fit">
-            <div className="w-10 h-10 bg-[#06082C] rounded-lg flex items-center justify-center">
-              <Truck className="w-6 h-6 text-white" />
+          <Link href="/" className="flex items-center gap-3 w-fit">
+            <div className="w-10 h-10 relative flex items-center justify-center">
+              <Image
+                src="/FLNSITELOGO.png"
+                alt="Freight Link Network"
+                width={40}
+                height={40}
+                className="object-contain"
+              />
             </div>
             <span className="text-xl font-bold text-[#06082C]">
               Freight Link Network

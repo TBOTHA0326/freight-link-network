@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import Link from 'next/link';
 import { 
   Package, 
   Search, 
@@ -10,7 +11,8 @@ import {
   Clock,
   MapPin,
   Calendar,
-  Building2
+  Building2,
+  Plus
 } from 'lucide-react';
 import { SectionLoading } from '@/components/LoadingSpinner';
 
@@ -121,14 +123,23 @@ export default function AdminLoadsPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#06082C] flex items-center gap-3">
-          <Package className="w-7 h-7" />
-          All Loads
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Manage and review all loads on the platform
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#06082C] flex items-center gap-3">
+            <Package className="w-7 h-7" />
+            All Loads
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Manage and review all loads on the platform
+          </p>
+        </div>
+        <Link
+          href="/admin/loads/new"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#06082C] text-white rounded-lg hover:bg-[#0a0e40] transition-colors"
+        >
+          <Plus className="w-5 h-5" />
+          Add New Load
+        </Link>
       </div>
 
       {/* Filters */}

@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Truck, Mail, Phone, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import { Mail, Phone, MapPin } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -8,9 +9,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                <Truck className="w-6 h-6 text-[#06082C]" />
+            <Link href="/" className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 relative flex items-center justify-center">
+                <Image
+                  src="/FLNSITELOGO.png"
+                  alt="Freight Link Network"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
               </div>
               <span className="text-xl font-bold">Freight Link Network</span>
             </Link>

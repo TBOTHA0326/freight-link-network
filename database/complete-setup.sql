@@ -221,7 +221,7 @@ END $$;
 -- LOADS TABLE
 CREATE TABLE IF NOT EXISTS loads (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  company_id UUID REFERENCES companies(id) ON DELETE CASCADE, -- Nullable for admin-posted loads
   title TEXT NOT NULL,
   description TEXT,
   cargo_type TEXT,

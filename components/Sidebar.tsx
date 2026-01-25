@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from './AuthProvider';
 import {
@@ -74,9 +75,15 @@ export default function Sidebar() {
     <aside className="fixed left-0 top-0 h-full w-64 bg-[#06082C] text-white z-40 flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-            <Truck className="w-6 h-6 text-[#06082C]" />
+        <Link href="/" className="flex items-center gap-3">
+          <div className="w-10 h-10 relative flex items-center justify-center">
+            <Image
+              src="/FLNSITELOGO.png"
+              alt="Freight Link Network"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
           </div>
           <div>
             <span className="text-lg font-bold">Freight Link</span>
