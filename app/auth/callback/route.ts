@@ -57,12 +57,14 @@ export async function GET(request: NextRequest) {
 
   // Handle email confirmation with token_hash (email link verification)
   if (token_hash && type) {
-    const { error: verifyError } = await supabase.auth.verifyOtp({
+    const { data, error: verifyError } = await supabase.auth.verifyOtp({
       token_hash,
       type: type as 'signup' | 'email' | 'recovery' | 'invite' | 'magiclink' | 'email_change',
     });
 
-    if (!verifyError) {
+    if (!verifyError && data.session) {
+      // Add a small delay to ensure session is properly established
+      await new Promise(resolve => setTimeout(resolve, 100));
       return NextResponse.redirect(new URL(next, requestUrl.origin));
     }
     
@@ -72,9 +74,11 @@ export async function GET(request: NextRequest) {
 
   // Handle PKCE flow with code
   if (code) {
-    const { error: codeError } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error: codeError } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!codeError) {
+    if (!codeError && data.session) {
+      // Add a small delay to ensure session is properly established
+      await new Promise(resolve => setTimeout(resolve, 100));
       return NextResponse.redirect(new URL(next, requestUrl.origin));
     }
     

@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { Truck, Eye, EyeOff, AlertCircle, Check, CheckCircle, ArrowRight, Home } from 'lucide-react';
 import { signUp } from '@/database/queries/auth';
 import type { UserRole } from '@/database/types';
+import { safeAuthRedirect } from '@/lib/authUtils';
 
 function RegisterForm() {
   const searchParams = useSearchParams();
@@ -51,20 +52,39 @@ function RegisterForm() {
     try {
       const result = await signUp(email, password, fullName, role);
       
-      // Registration successful - show thank you screen then redirect
+      // Registration successful - show thank you screen 
       if (result.user) {
         setRegistrationComplete(true);
-        // Auto-redirect after 5 seconds
-        setTimeout(() => {
-          window.location.href = role === 'supplier' 
-            ? '/dashboard/supplier' 
-            : '/dashboard/transporter';
-        }, 5000);
+        
+        // Check if user needs email confirmation
+        if (!result.session) {
+          // Email confirmation required - user will get an email
+          setError(null);
+        } else {
+          // Immediate access granted - redirect after short delay
+          setTimeout(async () => {
+            await safeAuthRedirect(role === 'supplier' 
+              ? '/dashboard/supplier' 
+              : '/dashboard/transporter');
+          }, 3000);
+        }
       } else {
-        setError('Registration failed. Please try again.');
+        throw new Error('Registration failed - no user returned');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account');
+      console.error('Registration error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create account';
+      
+      // Handle common registration errors more gracefully
+      if (errorMessage.includes('already registered')) {
+        setError('This email is already registered. Please try signing in instead.');
+      } else if (errorMessage.includes('Invalid email')) {
+        setError('Please enter a valid email address.');
+      } else if (errorMessage.includes('Password')) {
+        setError('Password must be at least 8 characters long.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }

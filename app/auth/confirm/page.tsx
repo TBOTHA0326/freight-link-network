@@ -57,19 +57,23 @@ export default function AuthConfirmPage() {
         // If we have access_token and refresh_token in hash (this is the default Supabase flow)
         if (accessToken && refreshToken) {
           console.log('Setting session from hash tokens...');
-          const { error: sessionError } = await supabase.auth.setSession({
+          const { data, error: sessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
 
-          if (sessionError) {
+          if (sessionError || !data.session) {
             console.error('Session error:', sessionError);
             setStatus('error');
-            setMessage('Failed to establish session');
+            setMessage(sessionError?.message || 'Failed to establish session');
             return;
           }
 
-          console.log('Session set successfully!');
+          console.log('Session set successfully!', data);
+          
+          // Wait a bit for session to propagate
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
           setStatus('success');
           setMessage('Email verified! Redirecting...');
           setTimeout(() => router.push('/auth/verified'), 1500);

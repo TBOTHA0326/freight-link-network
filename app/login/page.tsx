@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, AlertCircle, Home } from 'lucide-react';
 import { signIn } from '@/database/queries/auth';
 import { createClient } from '@/lib/supabaseClient';
+import { safeAuthRedirect } from '@/lib/authUtils';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,18 +41,19 @@ export default function LoginPage() {
       if (profileError) {
         // If profile doesn't exist, default to transporter dashboard
         console.log('Profile not found, defaulting to transporter');
-        router.push('/dashboard/transporter');
+        await safeAuthRedirect('/dashboard/transporter');
         return;
       }
 
       const userRole = profile?.role;
       
+      // Use safe redirect to ensure auth state is properly established
       if (userRole === 'admin') {
-        router.push('/admin/dashboard');
+        await safeAuthRedirect('/admin/dashboard');
       } else if (userRole === 'supplier') {
-        router.push('/dashboard/supplier');
+        await safeAuthRedirect('/dashboard/supplier');
       } else {
-        router.push('/dashboard/transporter');
+        await safeAuthRedirect('/dashboard/transporter');
       }
     } catch (err) {
       console.error('Login error:', err);

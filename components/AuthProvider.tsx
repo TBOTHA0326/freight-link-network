@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, retryCount = 0) => {
     try {
       const { data, error, status } = await supabase
         .from('profiles')
@@ -39,7 +39,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error) {
-        console.error('[AuthProvider] fetchProfile error', { status, message: error.message, details: error });
+        console.error('[AuthProvider] fetchProfile error', { status, message: error.message, details: error, retryCount });
+        
+        // Retry once on network errors
+        if (retryCount === 0 && (error.message.includes('network') || error.message.includes('timeout'))) {
+          console.log('[AuthProvider] Retrying profile fetch...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return fetchProfile(userId, 1);
+        }
+        
         return;
       }
 
@@ -48,6 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error('[AuthProvider] fetchProfile unexpected error', err);
+      
+      // Retry once on unexpected errors
+      if (retryCount === 0) {
+        console.log('[AuthProvider] Retrying profile fetch after unexpected error...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return fetchProfile(userId, 1);
+      }
     }
   };
 
@@ -60,15 +75,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await fetchProfile(session.user.id);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('[AuthProvider] Error getting initial session:', error);
+        }
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('[AuthProvider] Unexpected error getting initial session:', err);
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
     getInitialSession();
@@ -76,16 +101,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+        console.log('[AuthProvider] Auth state change:', event, !!session);
         
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
+        try {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+          } else {
+            setProfile(null);
+          }
+        } catch (err) {
+          console.error('[AuthProvider] Error handling auth state change:', err);
+        } finally {
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 

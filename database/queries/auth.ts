@@ -45,7 +45,16 @@ export async function signIn(email: string, password: string) {
     password,
   });
 
-  if (error) throw error;
+  if (error) {
+    console.error('Sign in error:', error);
+    throw new Error(error.message || 'Failed to sign in');
+  }
+  
+  // Validate that we received a session and user
+  if (!data.session || !data.user) {
+    throw new Error('Authentication failed - no session established');
+  }
+  
   return data;
 }
 
