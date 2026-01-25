@@ -25,7 +25,10 @@ export async function signUp(
     },
   });
 
-  if (error) throw error;
+  if (error) {
+    throw new Error(`Sign up failed: ${error.message}`);
+  }
+  
   return data;
 }
 

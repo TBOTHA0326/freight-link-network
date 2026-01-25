@@ -26,6 +26,16 @@ export default function AuthConfirmPage() {
 
         // Also check query params
         const searchParams = new URLSearchParams(window.location.search);
+        const codeParam = searchParams.get('code') ?? searchParams.get('token');
+
+        // If a PKCE/code param was provided, forward to the server callback which
+        // can exchange the code for a session using the server-side Supabase client.
+        if (codeParam) {
+          console.log('Forwarding code/token to server callback for exchange', { codeParam });
+          window.location.href = `/auth/callback${window.location.search}`;
+          return;
+        }
+
         const tokenHash = searchParams.get('token_hash');
         const tokenType = searchParams.get('type');
         const error = searchParams.get('error');

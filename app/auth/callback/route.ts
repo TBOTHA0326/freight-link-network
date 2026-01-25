@@ -11,12 +11,17 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   
   // Get various possible auth parameters
-  const code = requestUrl.searchParams.get('code');
+  // Accept multiple possible params. Supabase sometimes sends `token=pkce_...` (PKCE flow)
+  // instead of `code`, and some links use `redirect_to` instead of `next`.
+  const code = requestUrl.searchParams.get('code') ?? requestUrl.searchParams.get('token');
   const token_hash = requestUrl.searchParams.get('token_hash');
   const type = requestUrl.searchParams.get('type');
   const error = requestUrl.searchParams.get('error');
   const error_description = requestUrl.searchParams.get('error_description');
-  const next = requestUrl.searchParams.get('next') ?? '/auth/verified';
+  const redirect_to = requestUrl.searchParams.get('redirect_to');
+  const next = redirect_to ?? requestUrl.searchParams.get('next') ?? '/auth/verified';
+
+  console.log('Auth callback params:', { code, token_hash, type, error, error_description, next });
 
   // If there's an error from Supabase, redirect to error page
   if (error) {

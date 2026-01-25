@@ -31,14 +31,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient();
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error, status } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-    if (!error && data) {
-      setProfile(data as Profile);
+      if (error) {
+        console.error('[AuthProvider] fetchProfile error', { status, message: error.message, details: error });
+        return;
+      }
+
+      if (data) {
+        setProfile(data as Profile);
+      }
+    } catch (err) {
+      console.error('[AuthProvider] fetchProfile unexpected error', err);
     }
   };
 

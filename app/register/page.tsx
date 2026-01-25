@@ -50,15 +50,17 @@ function RegisterForm() {
     try {
       const result = await signUp(email, password, fullName, role);
       
-      // Check if email confirmation is required
-      if (result.user && !result.session) {
-        // Email confirmation required - show success message
-        setRegistrationComplete(true);
-      } else if (result.session) {
-        // Auto-confirmed (e.g., in development) - redirect to dashboard
+      // With email confirmation disabled, user should have a session immediately
+      if (result.session) {
+        // Redirect to appropriate dashboard
         window.location.href = role === 'supplier' 
           ? '/dashboard/supplier' 
           : '/dashboard/transporter';
+      } else if (result.user && !result.session) {
+        // Fallback: If email confirmation is still enabled, show message
+        setRegistrationComplete(true);
+      } else {
+        setError('Registration completed but no session created. Please try logging in.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account');
