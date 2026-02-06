@@ -7,6 +7,33 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Validate redirect URL is safe (relative path, same origin only)
+function getSafeRedirectUrl(url: string | null): string {
+  const defaultUrl = '/auth/verified';
+  
+  if (!url) return defaultUrl;
+  
+  // Only allow relative URLs that start with / but not //
+  // This prevents open redirect attacks
+  if (url.startsWith('/') && !url.startsWith('//') && !url.includes(':')) {
+    // Additional check for allowed paths
+    const allowedPaths = [
+      '/auth/verified',
+      '/dashboard/supplier',
+      '/dashboard/transporter',
+      '/admin/dashboard',
+      '/reset-password',
+    ];
+    
+    // Check if URL starts with any allowed path
+    if (allowedPaths.some(path => url.startsWith(path)) || url === '/') {
+      return url;
+    }
+  }
+  
+  return defaultUrl;
+}
+
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   
@@ -19,9 +46,9 @@ export async function GET(request: NextRequest) {
   const error = requestUrl.searchParams.get('error');
   const error_description = requestUrl.searchParams.get('error_description');
   const redirect_to = requestUrl.searchParams.get('redirect_to');
-  const next = redirect_to ?? requestUrl.searchParams.get('next') ?? '/auth/verified';
-
-  console.log('Auth callback params:', { code, token_hash, type, error, error_description, next });
+  
+  // Sanitize the redirect URL to prevent open redirect attacks
+  const next = getSafeRedirectUrl(redirect_to ?? requestUrl.searchParams.get('next'));
 
   // If there's an error from Supabase, redirect to error page
   if (error) {

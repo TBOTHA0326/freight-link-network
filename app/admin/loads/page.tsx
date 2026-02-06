@@ -26,9 +26,10 @@ interface Load {
   delivery_province: string | null;
   pickup_date: string | null;
   created_at: string;
-  company?: {
+  company_id: string | null;
+  company: {
     name: string;
-  };
+  } | null;
 }
 
 export default function AdminLoadsPage() {
@@ -43,16 +44,36 @@ export default function AdminLoadsPage() {
 
   const fetchLoads = async () => {
     try {
+      // Use left join by using the () syntax for optional relationships
       const { data, error } = await supabase
         .from('loads')
         .select(`
-          *,
-          company:companies(name)
+          id,
+          title,
+          status,
+          pickup_city,
+          pickup_province,
+          delivery_city,
+          delivery_province,
+          pickup_date,
+          created_at,
+          company_id,
+          companies ( name )
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setLoads(data || []);
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      // Map the data to include company name - companies can be null or an object
+      const mappedData = (data || []).map((load: any) => ({
+        ...load,
+        company: load.companies ? { name: load.companies.name } : null
+      }));
+      
+      setLoads(mappedData);
     } catch (err) {
       console.error('Error fetching loads:', err);
     } finally {

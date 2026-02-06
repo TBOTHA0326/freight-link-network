@@ -3,6 +3,7 @@
 // =============================================
 
 import { createClient } from '@/lib/supabaseClient';
+import { geocodeAddress } from '@/lib/mapbox';
 import type { 
   Load, 
   LoadFormInput, 
@@ -12,7 +13,7 @@ import type {
   UserRole 
 } from '../types';
 
-// Create a new load
+// Create a new load with auto-geocoding
 export async function createLoad(
   companyId: string,
   input: LoadFormInput
@@ -22,11 +23,59 @@ export async function createLoad(
   
   if (!user) throw new Error('User not authenticated');
 
+  // Auto-geocode pickup location if coordinates not provided
+  let pickupLat = input.pickup_lat;
+  let pickupLng = input.pickup_lng;
+  if (!pickupLat && input.pickup_city) {
+    const pickupAddress = [
+      input.pickup_address,
+      input.pickup_city,
+      input.pickup_province,
+      input.pickup_country || 'South Africa'
+    ].filter(Boolean).join(', ');
+    
+    try {
+      const coords = await geocodeAddress(pickupAddress);
+      if (coords) {
+        pickupLat = coords.latitude;
+        pickupLng = coords.longitude;
+      }
+    } catch (err) {
+      console.error('Failed to geocode pickup address:', err);
+    }
+  }
+
+  // Auto-geocode delivery location if coordinates not provided
+  let deliveryLat = input.delivery_lat;
+  let deliveryLng = input.delivery_lng;
+  if (!deliveryLat && input.delivery_city) {
+    const deliveryAddress = [
+      input.delivery_address,
+      input.delivery_city,
+      input.delivery_province,
+      input.delivery_country || 'South Africa'
+    ].filter(Boolean).join(', ');
+    
+    try {
+      const coords = await geocodeAddress(deliveryAddress);
+      if (coords) {
+        deliveryLat = coords.latitude;
+        deliveryLng = coords.longitude;
+      }
+    } catch (err) {
+      console.error('Failed to geocode delivery address:', err);
+    }
+  }
+
   const { data, error } = await supabase
     .from('loads')
     .insert({
       company_id: companyId,
       ...input,
+      pickup_lat: pickupLat,
+      pickup_lng: pickupLng,
+      delivery_lat: deliveryLat,
+      delivery_lng: deliveryLng,
       status: 'pending',
       created_by: user.id,
     })

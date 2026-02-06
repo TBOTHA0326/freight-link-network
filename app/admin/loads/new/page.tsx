@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/components/AuthProvider';
+import { geocodeAddress } from '@/lib/mapbox';
 import { 
   Package, 
   MapPin, 
@@ -11,7 +12,9 @@ import {
   Truck,
   ArrowLeft,
   Save,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -28,16 +31,15 @@ const SA_PROVINCES = [
 ];
 
 const TRAILER_TYPES = [
-  'Flatbed',
-  'Tautliner',
-  'Refrigerated',
-  'Tanker',
-  'Tipper',
-  'Lowbed',
-  'Container',
-  'Side Tipper',
-  'Interlink',
-  'Other',
+  { value: 'flatbed', label: 'Flatbed' },
+  { value: 'tautliner', label: 'Tautliner' },
+  { value: 'refrigerated', label: 'Refrigerated' },
+  { value: 'tanker', label: 'Tanker' },
+  { value: 'side_tipper', label: 'Side Tipper' },
+  { value: 'end_tipper', label: 'End Tipper' },
+  { value: 'lowbed', label: 'Lowbed' },
+  { value: 'container', label: 'Container' },
+  { value: 'other', label: 'Other' },
 ];
 
 interface Company {
@@ -50,7 +52,9 @@ export default function AdminNewLoadPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [suppliers, setSuppliers] = useState<Company[]>([]);
   
   const [formData, setFormData] = useState({
@@ -72,10 +76,11 @@ export default function AdminNewLoadPage() {
     pickup_date: '',
     delivery_date: '',
     budget_amount: '',
-    required_trailer_type: '',
-    special_requirements: '',
+    required_trailer_type: [] as string[],
+    special_instructions: '',
     is_cross_border: false,
-    status: 'approved', // Admin can post directly as approved
+    is_hazardous: false,
+    status: 'approved',
   });
 
   useEffect(() => {
@@ -94,41 +99,180 @@ export default function AdminNewLoadPage() {
     }
   };
 
+  const handleTrailerTypeToggle = (type: string) => {
+    setFormData(prev => {
+      const current = prev.required_trailer_type;
+      if (current.includes(type)) {
+        return { ...prev, required_trailer_type: current.filter(t => t !== type) };
+      }
+      return { ...prev, required_trailer_type: [...current, type] };
+    });
+  };
+
+  const geocodeLocations = async () => {
+    setGeocoding(true);
+    setError(null);
+    setSuccess(null);
+    
+    let geocodedPickup = false;
+    let geocodedDelivery = false;
+    
+    try {
+      // Geocode pickup location
+      if (formData.pickup_city && !formData.pickup_lat) {
+        const pickupAddress = [
+          formData.pickup_address,
+          formData.pickup_city,
+          formData.pickup_province,
+          'South Africa'
+        ].filter(Boolean).join(', ');
+        
+        console.log('Geocoding pickup:', pickupAddress);
+        const pickupCoords = await geocodeAddress(pickupAddress);
+        console.log('Pickup coords:', pickupCoords);
+        
+        if (pickupCoords) {
+          setFormData(prev => ({
+            ...prev,
+            pickup_lat: pickupCoords.latitude.toString(),
+            pickup_lng: pickupCoords.longitude.toString()
+          }));
+          geocodedPickup = true;
+        }
+      }
+
+      // Geocode delivery location
+      if (formData.delivery_city && !formData.delivery_lat) {
+        const deliveryAddress = [
+          formData.delivery_address,
+          formData.delivery_city,
+          formData.delivery_province,
+          'South Africa'
+        ].filter(Boolean).join(', ');
+        
+        console.log('Geocoding delivery:', deliveryAddress);
+        const deliveryCoords = await geocodeAddress(deliveryAddress);
+        console.log('Delivery coords:', deliveryCoords);
+        
+        if (deliveryCoords) {
+          setFormData(prev => ({
+            ...prev,
+            delivery_lat: deliveryCoords.latitude.toString(),
+            delivery_lng: deliveryCoords.longitude.toString()
+          }));
+          geocodedDelivery = true;
+        }
+      }
+      
+      // Provide feedback
+      if (geocodedPickup && geocodedDelivery) {
+        setSuccess('Both pickup and delivery locations geocoded successfully!');
+      } else if (geocodedPickup) {
+        setSuccess('Pickup location geocoded. Delivery location could not be found - please check the address or enter coordinates manually.');
+      } else if (geocodedDelivery) {
+        setSuccess('Delivery location geocoded. Pickup location could not be found - please check the address or enter coordinates manually.');
+      } else if (!formData.pickup_city && !formData.delivery_city) {
+        setError('Please enter at least a city for pickup or delivery before geocoding.');
+      } else if (formData.pickup_lat && formData.delivery_lat) {
+        setSuccess('Coordinates already filled in.');
+      } else {
+        setError('Could not geocode addresses. Please check the addresses are valid South African locations, or enter coordinates manually. Make sure NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN is set in your .env.local file.');
+      }
+    } catch (err) {
+      console.error('Geocoding error:', err);
+      setError('Failed to geocode addresses. Please enter coordinates manually or check addresses.');
+    } finally {
+      setGeocoding(false);
+    }
+  };
+
+  const validateForm = (): string | null => {
+    if (!formData.title.trim()) {
+      return 'Load title is required';
+    }
+    if (!formData.pickup_city.trim()) {
+      return 'Pickup city is required';
+    }
+    if (!formData.delivery_city.trim()) {
+      return 'Delivery city is required';
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    
     setLoading(true);
     setError(null);
 
     try {
+      // Auto-geocode if coordinates are missing
+      let pickupLat = formData.pickup_lat ? parseFloat(formData.pickup_lat) : null;
+      let pickupLng = formData.pickup_lng ? parseFloat(formData.pickup_lng) : null;
+      let deliveryLat = formData.delivery_lat ? parseFloat(formData.delivery_lat) : null;
+      let deliveryLng = formData.delivery_lng ? parseFloat(formData.delivery_lng) : null;
+
+      // Geocode if missing
+      if (!pickupLat && formData.pickup_city) {
+        const pickupAddress = [formData.pickup_address, formData.pickup_city, formData.pickup_province, 'South Africa'].filter(Boolean).join(', ');
+        const coords = await geocodeAddress(pickupAddress);
+        if (coords) {
+          pickupLat = coords.latitude;
+          pickupLng = coords.longitude;
+        }
+      }
+
+      if (!deliveryLat && formData.delivery_city) {
+        const deliveryAddress = [formData.delivery_address, formData.delivery_city, formData.delivery_province, 'South Africa'].filter(Boolean).join(', ');
+        const coords = await geocodeAddress(deliveryAddress);
+        if (coords) {
+          deliveryLat = coords.latitude;
+          deliveryLng = coords.longitude;
+        }
+      }
+
       const { error: insertError } = await supabase
         .from('loads')
         .insert({
           company_id: formData.company_id || null,
           created_by: user?.id,
-          title: formData.title,
+          title: formData.title.trim(),
           description: formData.description || null,
           cargo_type: formData.cargo_type || null,
           weight_tons: formData.weight_tons ? parseFloat(formData.weight_tons) : null,
           pickup_address: formData.pickup_address || null,
           pickup_city: formData.pickup_city || null,
           pickup_province: formData.pickup_province || null,
-          pickup_lat: formData.pickup_lat ? parseFloat(formData.pickup_lat) : null,
-          pickup_lng: formData.pickup_lng ? parseFloat(formData.pickup_lng) : null,
+          pickup_lat: pickupLat,
+          pickup_lng: pickupLng,
           delivery_address: formData.delivery_address || null,
           delivery_city: formData.delivery_city || null,
           delivery_province: formData.delivery_province || null,
-          delivery_lat: formData.delivery_lat ? parseFloat(formData.delivery_lat) : null,
-          delivery_lng: formData.delivery_lng ? parseFloat(formData.delivery_lng) : null,
+          delivery_lat: deliveryLat,
+          delivery_lng: deliveryLng,
           pickup_date: formData.pickup_date || null,
           delivery_date: formData.delivery_date || null,
           budget_amount: formData.budget_amount ? parseFloat(formData.budget_amount) : null,
-          required_trailer_type: formData.required_trailer_type || null,
-          special_requirements: formData.special_requirements || null,
+          required_trailer_type: formData.required_trailer_type.length > 0 ? formData.required_trailer_type : null,
+          special_instructions: formData.special_instructions || null,
           is_cross_border: formData.is_cross_border,
+          is_hazardous: formData.is_hazardous,
           status: formData.status,
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        // Provide helpful error messages
+        if (insertError.message?.includes('violates not-null constraint') && insertError.message?.includes('company_id')) {
+          throw new Error('Database requires a company_id. Please run database/fix-admin-loads.sql in Supabase SQL Editor to enable admin load posting without a supplier.');
+        }
+        throw insertError;
+      }
 
       router.push('/admin/loads');
     } catch (err) {
@@ -162,6 +306,13 @@ export default function AdminNewLoadPage() {
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 text-red-700">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
           <p>{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 text-green-700">
+          <CheckCircle className="w-5 h-5 flex-shrink-0" />
+          <p>{success}</p>
         </div>
       )}
 
@@ -212,7 +363,7 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Load Type
+                Cargo Type
               </label>
               <input
                 type="text"
@@ -229,6 +380,7 @@ export default function AdminNewLoadPage() {
               <input
                 type="number"
                 step="0.1"
+                min="0"
                 value={formData.weight_tons}
                 onChange={(e) => setFormData({ ...formData, weight_tons: e.target.value })}
                 placeholder="e.g., 30"
@@ -240,10 +392,12 @@ export default function AdminNewLoadPage() {
 
         {/* Pickup Location */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-[#06082C] flex items-center gap-2 mb-4">
-            <MapPin className="w-5 h-5 text-green-500" />
-            Pickup Location
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-[#06082C] flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-green-500" />
+              Pickup Location
+            </h2>
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -259,10 +413,11 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                City
+                City *
               </label>
               <input
                 type="text"
+                required
                 value={formData.pickup_city}
                 onChange={(e) => setFormData({ ...formData, pickup_city: e.target.value })}
                 placeholder="e.g., Johannesburg"
@@ -286,27 +441,27 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Latitude (Optional)
+                Latitude
               </label>
               <input
                 type="number"
                 step="any"
                 value={formData.pickup_lat}
                 onChange={(e) => setFormData({ ...formData, pickup_lat: e.target.value })}
-                placeholder="-26.2041"
+                placeholder="Auto-filled or enter manually"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C]"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Longitude (Optional)
+                Longitude
               </label>
               <input
                 type="number"
                 step="any"
                 value={formData.pickup_lng}
                 onChange={(e) => setFormData({ ...formData, pickup_lng: e.target.value })}
-                placeholder="28.0473"
+                placeholder="Auto-filled or enter manually"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C]"
               />
             </div>
@@ -315,10 +470,12 @@ export default function AdminNewLoadPage() {
 
         {/* Delivery Location */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-[#06082C] flex items-center gap-2 mb-4">
-            <MapPin className="w-5 h-5 text-red-500" />
-            Delivery Location
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-[#06082C] flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-red-500" />
+              Delivery Location
+            </h2>
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -334,10 +491,11 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                City
+                City *
               </label>
               <input
                 type="text"
+                required
                 value={formData.delivery_city}
                 onChange={(e) => setFormData({ ...formData, delivery_city: e.target.value })}
                 placeholder="e.g., Durban"
@@ -361,30 +519,58 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Latitude (Optional)
+                Latitude
               </label>
               <input
                 type="number"
                 step="any"
                 value={formData.delivery_lat}
                 onChange={(e) => setFormData({ ...formData, delivery_lat: e.target.value })}
-                placeholder="-29.8587"
+                placeholder="Auto-filled or enter manually"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C]"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Longitude (Optional)
+                Longitude
               </label>
               <input
                 type="number"
                 step="any"
                 value={formData.delivery_lng}
                 onChange={(e) => setFormData({ ...formData, delivery_lng: e.target.value })}
-                placeholder="31.0218"
+                placeholder="Auto-filled or enter manually"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C]"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Geocode Button */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-blue-900">Auto-fill Coordinates</p>
+              <p className="text-sm text-blue-700">Click to automatically geocode pickup and delivery locations for map display</p>
+            </div>
+            <button
+              type="button"
+              onClick={geocodeLocations}
+              disabled={geocoding || (!formData.pickup_city && !formData.delivery_city)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {geocoding ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Geocoding...
+                </>
+              ) : (
+                <>
+                  <MapPin className="w-4 h-4" />
+                  Geocode Addresses
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -392,12 +578,12 @@ export default function AdminNewLoadPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-[#06082C] flex items-center gap-2 mb-4">
             <Calendar className="w-5 h-5" />
-            Schedule & Requirements
+            Schedule &amp; Requirements
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Available From:
+                Available From
               </label>
               <input
                 type="date"
@@ -408,7 +594,7 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Available Until:
+                Delivery By
               </label>
               <input
                 type="date"
@@ -419,10 +605,11 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price (ZAR)
+                Budget (ZAR)
               </label>
               <input
                 type="number"
+                min="0"
                 value={formData.budget_amount}
                 onChange={(e) => setFormData({ ...formData, budget_amount: e.target.value })}
                 placeholder="e.g., 25000"
@@ -431,32 +618,51 @@ export default function AdminNewLoadPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Required Trailer Type
+                Initial Status
               </label>
               <select
-                value={formData.required_trailer_type}
-                onChange={(e) => setFormData({ ...formData, required_trailer_type: e.target.value })}
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C]"
               >
-                <option value="">Any / Not Specified</option>
-                {TRAILER_TYPES.map((t) => (
-                  <option key={t} value={t.toLowerCase()}>{t}</option>
-                ))}
+                <option value="approved">Approved (Visible to transporters)</option>
+                <option value="pending">Pending (Requires approval)</option>
               </select>
             </div>
             <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Required Trailer Type(s)
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {TRAILER_TYPES.map((type) => (
+                  <button
+                    key={type.value}
+                    type="button"
+                    onClick={() => handleTrailerTypeToggle(type.value)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      formData.required_trailer_type.includes(type.value)
+                        ? 'bg-[#06082C] text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Special Requirements
+                Special Instructions
               </label>
               <textarea
-                value={formData.special_requirements}
-                onChange={(e) => setFormData({ ...formData, special_requirements: e.target.value })}
+                value={formData.special_instructions}
+                onChange={(e) => setFormData({ ...formData, special_instructions: e.target.value })}
                 rows={2}
-                placeholder="Any special documentation or other requirements..."
+                placeholder="Any special requirements or documentation needed..."
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C]"
               />
             </div>
-            <div className="md:col-span-2">
+            <div className="flex gap-6">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -464,30 +670,18 @@ export default function AdminNewLoadPage() {
                   onChange={(e) => setFormData({ ...formData, is_cross_border: e.target.checked })}
                   className="w-5 h-5 rounded border-gray-300 text-[#06082C] focus:ring-[#06082C]"
                 />
-                <span className="font-medium text-gray-900">Cross-border load</span>
+                <span className="font-medium text-gray-700">Cross-border load</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_hazardous}
+                  onChange={(e) => setFormData({ ...formData, is_hazardous: e.target.checked })}
+                  className="w-5 h-5 rounded border-gray-300 text-[#9B2640] focus:ring-[#9B2640]"
+                />
+                <span className="font-medium text-gray-700">Hazardous material</span>
               </label>
             </div>
-          </div>
-        </div>
-
-        {/* Status */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-[#06082C] flex items-center gap-2 mb-4">
-            <Truck className="w-5 h-5" />
-            Load Status
-          </h2>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Initial Status
-            </label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06082C]"
-            >
-              <option value="approved">Approved (Visible to transporters)</option>
-              <option value="pending">Pending (Requires approval)</option>
-            </select>
           </div>
         </div>
 
@@ -498,8 +692,17 @@ export default function AdminNewLoadPage() {
             disabled={loading}
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#06082C] text-white rounded-lg font-medium hover:bg-[#0a0e40] transition-colors disabled:opacity-50"
           >
-            <Save className="w-5 h-5" />
-            {loading ? 'Creating...' : 'Create Load'}
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Save className="w-5 h-5" />
+                Create Load
+              </>
+            )}
           </button>
           <Link
             href="/admin/loads"

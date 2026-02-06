@@ -9,7 +9,7 @@ import {
 } from '@/database/queries/companies';
 import { getDocumentsByCompany, uploadDocument, deleteDocument } from '@/database/queries/documents';
 import type { Company, Document, CompanyFormInput, DocumentCategory } from '@/database/types';
-import { Building2, Save, AlertCircle } from 'lucide-react';
+import { Building2, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import { SectionLoading } from '@/components/LoadingSpinner';
 import DocumentUpload from '@/components/DocumentUpload';
 import DocumentList from '@/components/DocumentList';
@@ -170,7 +170,7 @@ export default function TransporterCompanyPage() {
 
       {success && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3 text-green-700">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <CheckCircle className="w-5 h-5 flex-shrink-0" />
           <p>{success}</p>
         </div>
       )}

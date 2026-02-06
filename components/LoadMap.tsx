@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { createMap, addLoadMarkers } from '@/lib/mapbox';
 import type { MapLoad } from '@/database/types';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface LoadMapProps {
   loads: MapLoad[];
@@ -19,6 +19,10 @@ export default function LoadMap({ loads, onRefresh, loading = false }: LoadMapPr
   const markers = useRef<mapboxgl.Marker[]>([]);
   const [mapError, setMapError] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
+
+  // Filter loads with valid coordinates
+  const loadsWithCoords = loads.filter(l => l.pickup_lat && l.pickup_lng);
+  const loadsWithoutCoords = loads.filter(l => !l.pickup_lat || !l.pickup_lng);
 
   // Initialize map only once
   useEffect(() => {
@@ -64,9 +68,9 @@ export default function LoadMap({ loads, onRefresh, loading = false }: LoadMapPr
   useEffect(() => {
     if (!map.current || !mapReady) return;
 
-    // Update markers
-    markers.current = addLoadMarkers(map.current, loads, markers.current);
-  }, [loads, mapReady]);
+    // Update markers with loads that have coordinates
+    markers.current = addLoadMarkers(map.current, loadsWithCoords, markers.current);
+  }, [loadsWithCoords, mapReady]);
 
   if (mapError) {
     return (
@@ -97,7 +101,7 @@ export default function LoadMap({ loads, onRefresh, loading = false }: LoadMapPr
 
       {/* Load Count Badge */}
       <div className="absolute top-4 right-16 z-10 bg-[#06082C] text-white px-3 py-1.5 rounded-lg shadow-md text-sm font-medium">
-        {loads.length} Load{loads.length !== 1 ? 's' : ''}
+        {loadsWithCoords.length} Load{loadsWithCoords.length !== 1 ? 's' : ''} on map
       </div>
 
       {/* Map Container */}
@@ -105,6 +109,21 @@ export default function LoadMap({ loads, onRefresh, loading = false }: LoadMapPr
         ref={mapContainer}
         className="w-full h-[500px] rounded-xl overflow-hidden border border-gray-200"
       />
+
+      {/* Warning for loads without coordinates */}
+      {loadsWithoutCoords.length > 0 && (
+        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-yellow-800">
+              {loadsWithoutCoords.length} load{loadsWithoutCoords.length !== 1 ? 's' : ''} not showing on map
+            </p>
+            <p className="text-xs text-yellow-700 mt-1">
+              These loads don&apos;t have valid coordinates. Edit them to add location details, or the coordinates will be geocoded when the addresses are valid.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 text-sm">

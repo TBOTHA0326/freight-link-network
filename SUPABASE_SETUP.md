@@ -48,6 +48,13 @@ Go to **Table Editor** in the sidebar. You should see:
 - `loads`
 - `admin_stats`
 
+### Run Admin Loads Fix (Required for Admin Load Posting)
+
+1. Go back to **SQL Editor**
+2. Create a new query
+3. Copy contents of `database/fix-admin-loads.sql` and run it
+4. This allows admins to post loads without selecting a supplier company
+
 ### Run Storage Policies (Optional)
 
 1. Go back to **SQL Editor**

@@ -227,20 +227,49 @@ export async function geocodeAddress(
     return null;
   }
 
+  if (!address || address.trim().length < 3) {
+    console.warn('Address too short for geocoding:', address);
+    return null;
+  }
+
   try {
+    // Try with South Africa first
     const response = await fetch(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-        address
-      )}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=ZA&limit=1`
+        address.trim()
+      )}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=ZA&limit=1&types=place,locality,address`
     );
+
+    if (!response.ok) {
+      console.error('Geocoding API error:', response.status, response.statusText);
+      return null;
+    }
 
     const data = await response.json();
 
     if (data.features && data.features.length > 0) {
       const [longitude, latitude] = data.features[0].center;
+      console.log(`Geocoded "${address}" to [${latitude}, ${longitude}]`);
       return { latitude, longitude };
     }
 
+    // If no results with country filter, try without (for cross-border loads)
+    const globalResponse = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+        address.trim()
+      )}.json?access_token=${MAPBOX_ACCESS_TOKEN}&limit=1&types=place,locality,address`
+    );
+
+    if (globalResponse.ok) {
+      const globalData = await globalResponse.json();
+      if (globalData.features && globalData.features.length > 0) {
+        const [longitude, latitude] = globalData.features[0].center;
+        console.log(`Geocoded "${address}" globally to [${latitude}, ${longitude}]`);
+        return { latitude, longitude };
+      }
+    }
+
+    console.warn('No geocoding results for:', address);
     return null;
   } catch (error) {
     console.error('Geocoding error:', error);

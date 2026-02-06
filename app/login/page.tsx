@@ -4,10 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, AlertCircle, Home } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Home, Loader2 } from 'lucide-react';
 import { signIn } from '@/database/queries/auth';
 import { createClient } from '@/lib/supabaseClient';
-import { safeAuthRedirect } from '@/lib/authUtils';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,31 +29,36 @@ export default function LoginPage() {
         throw new Error('Sign in failed - no session returned');
       }
       
-      // Get profile to determine redirect - use the user from sign in response
-      const supabase = createClient();
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) {
-        // If profile doesn't exist, default to transporter dashboard
-        console.log('Profile not found, defaulting to transporter');
-        await safeAuthRedirect('/dashboard/transporter');
-        return;
-      }
-
-      const userRole = profile?.role;
+      // Get role from user metadata first (faster than DB query)
+      const metadataRole = user.user_metadata?.role;
       
-      // Use safe redirect to ensure auth state is properly established
-      if (userRole === 'admin') {
-        await safeAuthRedirect('/admin/dashboard');
-      } else if (userRole === 'supplier') {
-        await safeAuthRedirect('/dashboard/supplier');
+      // Determine redirect URL - use metadata role if available
+      let redirectUrl = '/dashboard/transporter';
+      if (metadataRole === 'admin') {
+        redirectUrl = '/admin/dashboard';
+      } else if (metadataRole === 'supplier') {
+        redirectUrl = '/dashboard/supplier';
+      } else if (metadataRole === 'transporter') {
+        redirectUrl = '/dashboard/transporter';
       } else {
-        await safeAuthRedirect('/dashboard/transporter');
+        // Fallback: fetch from profile only if metadata doesn't have role
+        const supabase = createClient();
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.role === 'admin') {
+          redirectUrl = '/admin/dashboard';
+        } else if (profile?.role === 'supplier') {
+          redirectUrl = '/dashboard/supplier';
+        }
       }
+      
+      // Navigate and refresh to ensure auth state is picked up
+      router.push(redirectUrl);
+      router.refresh();
     } catch (err) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign in');
@@ -151,9 +155,16 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-4 py-3 bg-[#06082C] text-white rounded-lg font-medium hover:bg-[#0a0e40] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full px-4 py-3 bg-[#06082C] text-white rounded-lg font-medium hover:bg-[#0a0e40] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
               >
-                {loading ? 'Signing in...' : 'Sign In'}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
               </button>
             </form>
 

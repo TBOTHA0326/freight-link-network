@@ -6,7 +6,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { getCurrentUserCompany } from '@/database/queries/companies';
 import { createLoad } from '@/database/queries/loads';
 import type { Company, LoadFormInput, TrailerType } from '@/database/types';
-import { Package, ArrowLeft, Save, AlertCircle } from 'lucide-react';
+import { Package, ArrowLeft, Save, AlertCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { SectionLoading } from '@/components/LoadingSpinner';
 
@@ -534,8 +534,17 @@ export default function NewLoadPage() {
               disabled={saving}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#9B2640] text-white rounded-lg font-medium hover:bg-[#7a1e33] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <Save className="w-5 h-5" />
-              {saving ? 'Posting Load...' : 'Post Load'}
+              {saving ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Posting Load...
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  Post Load
+                </>
+              )}
             </button>
           </div>
         </div>

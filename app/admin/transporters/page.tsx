@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { 
   Truck, 
@@ -214,6 +215,12 @@ export default function AdminTransportersPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
+                      <Link
+                        href={`/admin/companies/${company.id}`}
+                        className="px-3 py-1 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors inline-flex items-center gap-1"
+                      >
+                        <Eye className="w-4 h-4" /> View
+                      </Link>
                       <button
                         onClick={() => toggleVerification(company.id, company.is_verified)}
                         className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${

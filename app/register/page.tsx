@@ -3,14 +3,14 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
-import { Truck, Eye, EyeOff, AlertCircle, Check, CheckCircle, ArrowRight, Home } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Truck, Eye, EyeOff, AlertCircle, Check, CheckCircle, ArrowRight, Home, Loader2 } from 'lucide-react';
 import { signUp } from '@/database/queries/auth';
 import type { UserRole } from '@/database/types';
-import { safeAuthRedirect } from '@/lib/authUtils';
 
 function RegisterForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,10 +62,12 @@ function RegisterForm() {
           setError(null);
         } else {
           // Immediate access granted - redirect after short delay
-          setTimeout(async () => {
-            await safeAuthRedirect(role === 'supplier' 
+          setTimeout(() => {
+            const redirectUrl = role === 'supplier' 
               ? '/dashboard/supplier' 
-              : '/dashboard/transporter');
+              : '/dashboard/transporter';
+            router.push(redirectUrl);
+            router.refresh();
           }, 3000);
         }
       } else {
@@ -353,11 +355,11 @@ function RegisterForm() {
                   />
                   <span className="text-sm text-gray-600">
                     I agree to the{' '}
-                    <Link href="#" className="text-[#06082C] hover:underline">
+                    <Link href="/terms" className="text-[#06082C] hover:underline" target="_blank">
                       Terms of Service
                     </Link>{' '}
                     and{' '}
-                    <Link href="#" className="text-[#06082C] hover:underline">
+                    <Link href="/privacy" className="text-[#06082C] hover:underline" target="_blank">
                       Privacy Policy
                     </Link>
                   </span>

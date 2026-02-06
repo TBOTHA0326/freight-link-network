@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabaseClient';
 import type { Profile } from '@/database/types';
 
@@ -32,19 +32,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string, retryCount = 0) => {
     try {
-      const { data, error, status } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
       if (error) {
-        console.error('[AuthProvider] fetchProfile error', { status, message: error.message, details: error, retryCount });
+        // Only retry on actual network errors, not missing profile
+        if (error.code === 'PGRST116') {
+          // No profile found - this is normal for new users
+          return;
+        }
         
-        // Retry once on network errors
-        if (retryCount === 0 && (error.message.includes('network') || error.message.includes('timeout'))) {
-          console.log('[AuthProvider] Retrying profile fetch...');
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        // Retry once on network errors with shorter delay
+        if (retryCount === 0 && (error.message.includes('network') || error.message.includes('fetch'))) {
+          await new Promise(resolve => setTimeout(resolve, 300));
           return fetchProfile(userId, 1);
         }
         
@@ -55,12 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(data as Profile);
       }
     } catch (err) {
-      console.error('[AuthProvider] fetchProfile unexpected error', err);
-      
-      // Retry once on unexpected errors
-      if (retryCount === 0) {
-        console.log('[AuthProvider] Retrying profile fetch after unexpected error...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      // Only retry on network errors
+      if (retryCount === 0 && err instanceof TypeError) {
+        await new Promise(resolve => setTimeout(resolve, 300));
         return fetchProfile(userId, 1);
       }
     }
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('[AuthProvider] Error getting initial session:', error);
+          console.error('Error getting initial session:', error);
         }
         
         setSession(session);
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         setLoading(false);
       } catch (err) {
-        console.error('[AuthProvider] Unexpected error getting initial session:', err);
+        console.error('Unexpected error getting initial session:', err);
         setLoading(false);
       }
     };
@@ -100,9 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('[AuthProvider] Auth state change:', event, !!session);
-        
+      async (event: AuthChangeEvent, session: Session | null) => {
         try {
           setSession(session);
           setUser(session?.user ?? null);
@@ -113,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setProfile(null);
           }
         } catch (err) {
-          console.error('[AuthProvider] Error handling auth state change:', err);
+          console.error('Error handling auth state change:', err);
         } finally {
           setLoading(false);
         }

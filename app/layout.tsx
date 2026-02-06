@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/components/AuthProvider";import Navbar from '@/components/Navbar';
+import { AuthProvider } from "@/components/AuthProvider";
+import Navbar from '@/components/Navbar';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -11,6 +13,11 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+// Get the site URL from environment or default
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL 
+  ? `https://${process.env.VERCEL_URL}` 
+  : 'https://freightlinknetwork.co.za';
 
 export const metadata: Metadata = {
   title: {
@@ -23,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Freight Link Network',
     description: 'Connecting transporters and suppliers across South Africa. Streamline your logistics operations with our comprehensive platform.',
-    url: 'https://your-domain.com',
+    url: siteUrl,
     siteName: 'Freight Link Network',
     images: [
       {
@@ -57,7 +64,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const metadataBase = new URL('https://your-domain.com');
+export const metadataBase = new URL(siteUrl);
 
 export default function RootLayout({
   children,

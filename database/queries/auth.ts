@@ -140,8 +140,13 @@ export async function getProfileById(userId: string): Promise<Profile | null> {
 export async function resetPassword(email: string) {
   const supabase = createClient();
   
+  // Get origin safely for SSR compatibility
+  const origin = typeof window !== 'undefined' 
+    ? window.location.origin 
+    : process.env.NEXT_PUBLIC_SITE_URL || '';
+  
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
+    redirectTo: `${origin}/reset-password`,
   });
 
   if (error) throw error;
@@ -164,7 +169,7 @@ export async function updatePassword(newPassword: string) {
 export function onAuthStateChange(callback: (event: string, session: unknown) => void) {
   const supabase = createClient();
   
-  return supabase.auth.onAuthStateChange((event, session) => {
+  return supabase.auth.onAuthStateChange((event: string, session: unknown) => {
     callback(event, session);
   });
 }

@@ -16,6 +16,7 @@ import {
   MapPin,
   Settings,
   ChevronRight,
+  UserPlus,
 } from 'lucide-react';
 
 interface SidebarLink {
@@ -43,10 +44,10 @@ const supplierLinks: SidebarLink[] = [
 
 const adminLinks: SidebarLink[] = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+  { href: '/admin/users', label: 'Pending Users', icon: <UserPlus className="w-5 h-5" /> },
   { href: '/admin/transporters', label: 'Transporters', icon: <Truck className="w-5 h-5" /> },
   { href: '/admin/suppliers', label: 'Suppliers', icon: <Building2 className="w-5 h-5" /> },
   { href: '/admin/loads', label: 'All Loads', icon: <Package className="w-5 h-5" /> },
-  { href: '/admin/loads/new', label: 'Add Load', icon: <Package className="w-5 h-5" /> },
   { href: '/admin/map', label: 'Load Map', icon: <MapPin className="w-5 h-5" /> },
   { href: '/admin/approvals', label: 'Approvals', icon: <FileCheck className="w-5 h-5" /> },
   { href: '/admin/settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
