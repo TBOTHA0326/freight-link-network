@@ -79,7 +79,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error getting initial session:', error);
+          // If we get a refresh token error, clear the stale session
+          // so the user can sign in fresh instead of being stuck
+          if (
+            error.message?.includes('Refresh Token') ||
+            error.message?.includes('refresh_token') ||
+            error.message?.includes('Invalid') ||
+            error.code === 'bad_jwt'
+          ) {
+            await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            setLoading(false);
+            return;
+          }
         }
         
         setSession(session);
@@ -91,17 +105,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         setLoading(false);
       } catch (err) {
-        console.error('Unexpected error getting initial session:', err);
+        // Clear bad session on any unexpected error
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        setSession(null);
+        setUser(null);
+        setProfile(null);
         setLoading(false);
       }
     };
 
-    getInitialSession();
+    // Safety timeout — if getInitialSession hangs for 8 seconds, force
+    // loading to false so the app doesn't stay stuck on a spinner forever
+    const safetyTimer = setTimeout(() => {
+      setLoading((current) => {
+        if (current) {
+          // Session check hung — clear everything so user can sign in
+          supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          return false;
+        }
+        return current;
+      });
+    }, 8000);
+
+    getInitialSession().finally(() => clearTimeout(safetyTimer));
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session: Session | null) => {
         try {
+          // On TOKEN_REFRESHED failure or SIGNED_OUT, clear everything
+          if (event === 'TOKEN_REFRESHED' && !session) {
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            return;
+          }
+
           setSession(session);
           setUser(session?.user ?? null);
           
@@ -110,8 +152,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } else {
             setProfile(null);
           }
-        } catch (err) {
-          console.error('Error handling auth state change:', err);
+        } catch {
+          // Silently handle auth state change errors
         } finally {
           setLoading(false);
         }

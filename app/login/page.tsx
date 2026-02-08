@@ -22,6 +22,11 @@ export default function LoginPage() {
     setError(null);
 
     try {
+      const supabase = createClient();
+      
+      // Clear any stale session first to prevent "Invalid Refresh Token" errors
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      
       // Sign in - this returns the session directly
       const { session, user } = await signIn(email, password);
       
@@ -42,25 +47,27 @@ export default function LoginPage() {
         redirectUrl = '/dashboard/transporter';
       } else {
         // Fallback: fetch from profile only if metadata doesn't have role
-        const supabase = createClient();
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
 
-        if (profile?.role === 'admin') {
-          redirectUrl = '/admin/dashboard';
-        } else if (profile?.role === 'supplier') {
-          redirectUrl = '/dashboard/supplier';
+          if (profile?.role === 'admin') {
+            redirectUrl = '/admin/dashboard';
+          } else if (profile?.role === 'supplier') {
+            redirectUrl = '/dashboard/supplier';
+          }
+        } catch {
+          // If profile fetch fails, use default redirect
         }
       }
       
-      // Navigate and refresh to ensure auth state is picked up
+      // Navigate to dashboard — do NOT call router.refresh() as it
+      // interferes with the pending push() navigation in App Router
       router.push(redirectUrl);
-      router.refresh();
     } catch (err) {
-      console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign in');
       setLoading(false);
     }

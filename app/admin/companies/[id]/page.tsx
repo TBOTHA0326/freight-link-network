@@ -14,7 +14,9 @@ import {
   FileText,
   Truck,
   Users,
-  Package
+  Package,
+  Container,
+  ArrowRight
 } from 'lucide-react';
 import { SectionLoading } from '@/components/LoadingSpinner';
 
@@ -240,12 +242,12 @@ export default function AdminCompanyDetailPage() {
   const typeLabel = company.company_type === 'supplier' ? 'Supplier' : 'Transporter';
 
   return (
-    <div>
+    <div className="max-w-7xl">
       {/* Header */}
       <div className="mb-8">
         <Link 
           href={backLink}
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-[#06082C] mb-4"
+          className="inline-flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#06082C] border border-gray-300 rounded-lg mb-6 transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to {typeLabel}s
@@ -289,39 +291,48 @@ export default function AdminCompanyDetailPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {company.company_type === 'transporter' ? (
           <>
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Truck className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-[#06082C]">{stats.trucks}</p>
-                  <p className="text-sm text-gray-600">Trucks</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Package className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-[#06082C]">{stats.trailers}</p>
-                  <p className="text-sm text-gray-600">Trailers</p>
+            <Link href={`/admin/companies/${companyId}/trucks`} className="block group">
+              <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                    <Truck className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-2xl font-bold text-[#06082C]">{stats.trucks}</p>
+                    <p className="text-sm text-gray-600">Trucks</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-[#06082C]">{stats.drivers}</p>
-                  <p className="text-sm text-gray-600">Drivers</p>
+            </Link>
+            <Link href={`/admin/companies/${companyId}/trailers`} className="block group">
+              <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                    <Container className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-2xl font-bold text-[#06082C]">{stats.trailers}</p>
+                    <p className="text-sm text-gray-600">Trailers</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
-            </div>
+            </Link>
+            <Link href={`/admin/companies/${companyId}/drivers`} className="block group">
+              <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                    <Users className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-2xl font-bold text-[#06082C]">{stats.drivers}</p>
+                    <p className="text-sm text-gray-600">Drivers</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+            </Link>
           </>
         ) : (
           <div className="bg-white rounded-xl border border-gray-200 p-4">

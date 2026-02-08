@@ -9,17 +9,31 @@ import {
   updateTruck, 
   deleteTruck 
 } from '@/database/queries/trucks';
-import type { Company, Truck, TruckFormInput } from '@/database/types';
-import { Truck as TruckIcon, Plus, Edit2, Trash2, X, AlertCircle } from 'lucide-react';
+import { getDocumentsByTruck, uploadDocument, deleteDocument } from '@/database/queries/documents';
+import type { Company, Truck, TruckFormInput, Document, DocumentCategory } from '@/database/types';
+import { Truck as TruckIcon, Plus, Edit2, Trash2, X, AlertCircle, FileText } from 'lucide-react';
 import { SectionLoading } from '@/components/LoadingSpinner';
+import DocumentUpload from '@/components/DocumentUpload';
+import DocumentList from '@/components/DocumentList';
+
+const truckDocCategories: { category: DocumentCategory; title: string }[] = [
+  { category: 'truck_registration', title: 'Registration Certificate' },
+  { category: 'roadworthy', title: 'Roadworthy Certificate' },
+  { category: 'brake_test', title: 'Brake Test Certificate' },
+  { category: 'other', title: 'Other Documents' },
+];
 
 export default function TransporterTrucksPage() {
   const { profile } = useAuth();
   const [company, setCompany] = useState<Company | null>(null);
   const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showDocModal, setShowDocModal] = useState(false);
   const [editingTruck, setEditingTruck] = useState<Truck | null>(null);
+  const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
+  const [activeDocCategory, setActiveDocCategory] = useState<DocumentCategory>('truck_registration');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +54,13 @@ export default function TransporterTrucksPage() {
           setCompany(companyData);
           const trucksData = await getTrucksByCompany(companyData.id);
           setTrucks(trucksData);
+          // Fetch documents for all trucks
+          const allDocs: Document[] = [];
+          for (const truck of trucksData) {
+            const truckDocs = await getDocumentsByTruck(truck.id);
+            allDocs.push(...truckDocs);
+          }
+          setDocuments(allDocs);
         }
       } catch (err) {
         console.error('Error fetching trucks:', err);
@@ -83,6 +104,12 @@ export default function TransporterTrucksPage() {
     setError(null);
   };
 
+  const openDocModal = (truck: Truck) => {
+    setSelectedTruck(truck);
+    setActiveDocCategory('truck_registration');
+    setShowDocModal(true);
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -123,10 +150,35 @@ export default function TransporterTrucksPage() {
     try {
       await deleteTruck(truckId);
       setTrucks(trucks.filter((t) => t.id !== truckId));
+      // Also remove associated documents from state
+      setDocuments(documents.filter((d) => d.truck_id !== truckId));
     } catch (err) {
       console.error('Error deleting truck:', err);
       alert('Failed to delete truck');
     }
+  };
+
+  const handleDocumentUpload = async (file: File, title: string) => {
+    if (!company || !selectedTruck) return;
+
+    const doc = await uploadDocument({
+      company_id: company.id,
+      truck_id: selectedTruck.id,
+      category: activeDocCategory,
+      title,
+      file,
+    });
+
+    setDocuments([doc, ...documents]);
+  };
+
+  const handleDocumentDelete = async (documentId: string) => {
+    await deleteDocument(documentId);
+    setDocuments(documents.filter((d) => d.id !== documentId));
+  };
+
+  const getTruckDocuments = (truckId: string) => {
+    return documents.filter((d) => d.truck_id === truckId);
   };
 
   if (loading) {
@@ -179,7 +231,9 @@ export default function TransporterTrucksPage() {
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trucks.map((truck) => (
+          {trucks.map((truck) => {
+            const truckDocs = getTruckDocuments(truck.id);
+            return (
             <div
               key={truck.id}
               className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow"
@@ -189,6 +243,13 @@ export default function TransporterTrucksPage() {
                   <TruckIcon className="w-6 h-6 text-[#06082C]" />
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => openDocModal(truck)}
+                    className="p-2 text-gray-400 hover:text-[#06082C] hover:bg-gray-100 rounded-lg transition-colors"
+                    title="Manage Documents"
+                  >
+                    <FileText className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => openEditModal(truck)}
                     className="p-2 text-gray-400 hover:text-[#06082C] hover:bg-gray-100 rounded-lg transition-colors"
@@ -223,8 +284,21 @@ export default function TransporterTrucksPage() {
                   <span className="font-medium text-gray-700">{truck.number_of_axles}</span>
                 </div>
               </div>
+
+              {/* Documents Badge */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Documents:</span>
+                  <span className={`font-medium ${
+                    truckDocs.length > 0 ? 'text-green-600' : 'text-gray-400'
+                  }`}>
+                    {truckDocs.length} uploaded
+                  </span>
+                </div>
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -364,6 +438,66 @@ export default function TransporterTrucksPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Truck Documents Modal */}
+      {showDocModal && selectedTruck && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-lg font-semibold text-[#06082C]">
+                  Truck Documents
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {selectedTruck.registration_number} - {selectedTruck.make} {selectedTruck.model}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowDocModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {/* Document Category Tabs */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {truckDocCategories.map((cat) => (
+                  <button
+                    key={cat.category}
+                    onClick={() => setActiveDocCategory(cat.category)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      activeDocCategory === cat.category
+                        ? 'bg-[#06082C] text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {cat.title}
+                  </button>
+                ))}
+              </div>
+
+              {/* Document Upload */}
+              <div className="mb-6">
+                <DocumentUpload
+                  category={activeDocCategory}
+                  title={truckDocCategories.find((c) => c.category === activeDocCategory)?.title || ''}
+                  onUpload={handleDocumentUpload}
+                />
+              </div>
+
+              {/* Document List */}
+              <DocumentList
+                documents={getTruckDocuments(selectedTruck.id).filter(
+                  (d) => d.category === activeDocCategory
+                )}
+                onDelete={handleDocumentDelete}
+              />
+            </div>
           </div>
         </div>
       )}

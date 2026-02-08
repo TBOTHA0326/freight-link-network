@@ -9,9 +9,12 @@ import {
   updateTrailer, 
   deleteTrailer 
 } from '@/database/queries/trailers';
-import type { Company, Trailer, TrailerFormInput, TrailerType } from '@/database/types';
-import { Container, Plus, Edit2, Trash2, X, AlertCircle } from 'lucide-react';
+import { getDocumentsByTrailer, uploadDocument, deleteDocument } from '@/database/queries/documents';
+import type { Company, Trailer, TrailerFormInput, TrailerType, Document, DocumentCategory } from '@/database/types';
+import { Container, Plus, Edit2, Trash2, X, AlertCircle, FileText } from 'lucide-react';
 import { SectionLoading } from '@/components/LoadingSpinner';
+import DocumentUpload from '@/components/DocumentUpload';
+import DocumentList from '@/components/DocumentList';
 
 const trailerTypes: { value: TrailerType; label: string }[] = [
   { value: 'tautliner', label: 'Tautliner' },
@@ -25,13 +28,24 @@ const trailerTypes: { value: TrailerType; label: string }[] = [
   { value: 'other', label: 'Other' },
 ];
 
+const trailerDocCategories: { category: DocumentCategory; title: string }[] = [
+  { category: 'trailer_registration', title: 'Registration Certificate' },
+  { category: 'roadworthy', title: 'Roadworthy Certificate' },
+  { category: 'brake_test', title: 'Brake Test Certificate' },
+  { category: 'other', title: 'Other Documents' },
+];
+
 export default function TransporterTrailersPage() {
   const { profile } = useAuth();
   const [company, setCompany] = useState<Company | null>(null);
   const [trailers, setTrailers] = useState<Trailer[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showDocModal, setShowDocModal] = useState(false);
   const [editingTrailer, setEditingTrailer] = useState<Trailer | null>(null);
+  const [selectedTrailer, setSelectedTrailer] = useState<Trailer | null>(null);
+  const [activeDocCategory, setActiveDocCategory] = useState<DocumentCategory>('trailer_registration');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,6 +67,13 @@ export default function TransporterTrailersPage() {
           setCompany(companyData);
           const trailersData = await getTrailersByCompany(companyData.id);
           setTrailers(trailersData);
+          // Fetch documents for all trailers
+          const allDocs: Document[] = [];
+          for (const trailer of trailersData) {
+            const trailerDocs = await getDocumentsByTrailer(trailer.id);
+            allDocs.push(...trailerDocs);
+          }
+          setDocuments(allDocs);
         }
       } catch (err) {
         console.error('Error fetching trailers:', err);
@@ -98,6 +119,12 @@ export default function TransporterTrailersPage() {
     setError(null);
   };
 
+  const openDocModal = (trailer: Trailer) => {
+    setSelectedTrailer(trailer);
+    setActiveDocCategory('trailer_registration');
+    setShowDocModal(true);
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -138,10 +165,35 @@ export default function TransporterTrailersPage() {
     try {
       await deleteTrailer(trailerId);
       setTrailers(trailers.filter((t) => t.id !== trailerId));
+      // Also remove associated documents from state
+      setDocuments(documents.filter((d) => d.trailer_id !== trailerId));
     } catch (err) {
       console.error('Error deleting trailer:', err);
       alert('Failed to delete trailer');
     }
+  };
+
+  const handleDocumentUpload = async (file: File, title: string) => {
+    if (!company || !selectedTrailer) return;
+
+    const doc = await uploadDocument({
+      company_id: company.id,
+      trailer_id: selectedTrailer.id,
+      category: activeDocCategory,
+      title,
+      file,
+    });
+
+    setDocuments([doc, ...documents]);
+  };
+
+  const handleDocumentDelete = async (documentId: string) => {
+    await deleteDocument(documentId);
+    setDocuments(documents.filter((d) => d.id !== documentId));
+  };
+
+  const getTrailerDocuments = (trailerId: string) => {
+    return documents.filter((d) => d.trailer_id === trailerId);
   };
 
   const getTrailerTypeLabel = (type: TrailerType) => {
@@ -198,7 +250,9 @@ export default function TransporterTrailersPage() {
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trailers.map((trailer) => (
+          {trailers.map((trailer) => {
+            const trailerDocs = getTrailerDocuments(trailer.id);
+            return (
             <div
               key={trailer.id}
               className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow"
@@ -208,6 +262,13 @@ export default function TransporterTrailersPage() {
                   <Container className="w-6 h-6 text-[#9B2640]" />
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => openDocModal(trailer)}
+                    className="p-2 text-gray-400 hover:text-[#06082C] hover:bg-gray-100 rounded-lg transition-colors"
+                    title="Manage Documents"
+                  >
+                    <FileText className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => openEditModal(trailer)}
                     className="p-2 text-gray-400 hover:text-[#06082C] hover:bg-gray-100 rounded-lg transition-colors"
@@ -247,8 +308,21 @@ export default function TransporterTrailersPage() {
                   </div>
                 )}
               </div>
+
+              {/* Documents Badge */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Documents:</span>
+                  <span className={`font-medium ${
+                    trailerDocs.length > 0 ? 'text-green-600' : 'text-gray-400'
+                  }`}>
+                    {trailerDocs.length} uploaded
+                  </span>
+                </div>
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -403,6 +477,66 @@ export default function TransporterTrailersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Trailer Documents Modal */}
+      {showDocModal && selectedTrailer && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-lg font-semibold text-[#06082C]">
+                  Trailer Documents
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {selectedTrailer.registration_number} - {getTrailerTypeLabel(selectedTrailer.trailer_type)}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowDocModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {/* Document Category Tabs */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {trailerDocCategories.map((cat) => (
+                  <button
+                    key={cat.category}
+                    onClick={() => setActiveDocCategory(cat.category)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      activeDocCategory === cat.category
+                        ? 'bg-[#06082C] text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {cat.title}
+                  </button>
+                ))}
+              </div>
+
+              {/* Document Upload */}
+              <div className="mb-6">
+                <DocumentUpload
+                  category={activeDocCategory}
+                  title={trailerDocCategories.find((c) => c.category === activeDocCategory)?.title || ''}
+                  onUpload={handleDocumentUpload}
+                />
+              </div>
+
+              {/* Document List */}
+              <DocumentList
+                documents={getTrailerDocuments(selectedTrailer.id).filter(
+                  (d) => d.category === activeDocCategory
+                )}
+                onDelete={handleDocumentDelete}
+              />
+            </div>
           </div>
         </div>
       )}

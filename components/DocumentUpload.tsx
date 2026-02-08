@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
-import { Upload, X, FileText, Image, AlertCircle } from 'lucide-react';
+import { Upload, X, FileText, Image, AlertCircle, Loader2 } from 'lucide-react';
 import type { DocumentCategory } from '@/database/types';
 
 interface DocumentUploadProps {
@@ -10,7 +10,18 @@ interface DocumentUploadProps {
   onUpload: (file: File, title: string) => Promise<void>;
   accept?: string;
   maxSize?: number; // in MB
+  timeout?: number; // in milliseconds
 }
+
+// Helper to create a timeout promise
+const withTimeout = <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+  const timeout = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`Upload timed out after ${ms / 1000} seconds. Please check your internet connection and try again.`));
+    }, ms);
+  });
+  return Promise.race([promise, timeout]);
+};
 
 export default function DocumentUpload({
   category,
@@ -18,13 +29,16 @@ export default function DocumentUpload({
   onUpload,
   accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png',
   maxSize = 10,
+  timeout = 60000, // 60 second default timeout
 }: DocumentUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [customTitle, setCustomTitle] = useState(title);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -79,19 +93,60 @@ export default function DocumentUpload({
 
     setUploading(true);
     setError(null);
+    setUploadProgress('Preparing upload...');
 
     try {
-      await onUpload(selectedFile, customTitle);
+      // Create abort controller for potential cancellation
+      abortControllerRef.current = new AbortController();
+      
+      setUploadProgress('Uploading document...');
+      
+      // Wrap the upload with a timeout
+      await withTimeout(onUpload(selectedFile, customTitle), timeout);
+      
+      setUploadProgress('Upload complete!');
       setSelectedFile(null);
       setCustomTitle(title);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      console.error('Upload error:', err);
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Upload failed. Please try again.';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('timed out')) {
+          errorMessage = err.message;
+        } else if (err.message.includes('network') || err.message.includes('Network')) {
+          errorMessage = 'Network error. Please check your internet connection and try again.';
+        } else if (err.message.includes('storage') || err.message.includes('Storage')) {
+          errorMessage = 'Storage error. The documents bucket may not be configured. Please contact support.';
+        } else if (err.message.includes('policy') || err.message.includes('Policy') || err.message.includes('permission') || err.message.includes('Permission')) {
+          errorMessage = 'Permission denied. Please ensure you have the right to upload documents to this company.';
+        } else if (err.message.includes('authenticated') || err.message.includes('auth')) {
+          errorMessage = 'Session expired. Please refresh the page and log in again.';
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setUploading(false);
+      setUploadProgress('');
+      abortControllerRef.current = null;
     }
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setUploading(false);
+    setUploadProgress('');
+    setError('Upload cancelled');
   };
 
   const handleRemove = () => {
@@ -184,13 +239,31 @@ export default function DocumentUpload({
 
       {/* Upload Button */}
       {selectedFile && (
-        <button
-          onClick={handleUpload}
-          disabled={uploading || !customTitle.trim()}
-          className="w-full px-4 py-2 rounded-lg font-medium bg-[#06082C] text-white hover:bg-[#0a0e40] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {uploading ? 'Uploading...' : 'Upload Document'}
-        </button>
+        <div className="space-y-2">
+          {uploading ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-lg font-medium bg-[#06082C]/80 text-white">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>{uploadProgress || 'Uploading...'}</span>
+              </div>
+              <button
+                onClick={handleCancel}
+                type="button"
+                className="w-full px-4 py-2 rounded-lg font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel Upload
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleUpload}
+              disabled={!customTitle.trim()}
+              className="w-full px-4 py-2 rounded-lg font-medium bg-[#06082C] text-white hover:bg-[#0a0e40] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Upload Document
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { getCurrentUserCompany } from '@/database/queries/companies';
 import { createLoad } from '@/database/queries/loads';
+import { geocodeAddress } from '@/lib/mapbox';
 import type { Company, LoadFormInput, TrailerType } from '@/database/types';
-import { Package, ArrowLeft, Save, AlertCircle, Loader2 } from 'lucide-react';
+import { Package, ArrowLeft, Save, AlertCircle, Loader2, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { SectionLoading } from '@/components/LoadingSpinner';
 
@@ -40,7 +41,9 @@ export default function NewLoadPage() {
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<LoadFormInput>({
     title: '',
@@ -119,6 +122,74 @@ export default function NewLoadPage() {
     }
   };
 
+  const geocodeLocations = async () => {
+    setGeocoding(true);
+    setError(null);
+    setSuccess(null);
+
+    let geocodedPickup = false;
+    let geocodedDelivery = false;
+
+    try {
+      // Geocode pickup location
+      if (formData.pickup_city && !formData.pickup_lat) {
+        const pickupAddress = [
+          formData.pickup_address,
+          formData.pickup_city,
+          formData.pickup_province,
+          formData.pickup_country
+        ].filter(Boolean).join(', ');
+
+        const pickupCoords = await geocodeAddress(pickupAddress);
+        
+        if (pickupCoords) {
+          setFormData(prev => ({
+            ...prev,
+            pickup_lat: pickupCoords.latitude,
+            pickup_lng: pickupCoords.longitude
+          }));
+          geocodedPickup = true;
+        }
+      }
+
+      // Geocode delivery location
+      if (formData.delivery_city && !formData.delivery_lat) {
+        const deliveryAddress = [
+          formData.delivery_address,
+          formData.delivery_city,
+          formData.delivery_province,
+          formData.delivery_country
+        ].filter(Boolean).join(', ');
+
+        const deliveryCoords = await geocodeAddress(deliveryAddress);
+        
+        if (deliveryCoords) {
+          setFormData(prev => ({
+            ...prev,
+            delivery_lat: deliveryCoords.latitude,
+            delivery_lng: deliveryCoords.longitude
+          }));
+          geocodedDelivery = true;
+        }
+      }
+
+      if (geocodedPickup && geocodedDelivery) {
+        setSuccess('Both locations geocoded successfully!');
+      } else if (geocodedPickup) {
+        setSuccess('Pickup location geocoded successfully!');
+      } else if (geocodedDelivery) {
+        setSuccess('Delivery location geocoded successfully!');
+      } else {
+        setError('Unable to geocode locations. Please check the addresses.');
+      }
+    } catch (err) {
+      setError('Failed to geocode addresses. Please try again.');
+      console.error('Geocoding error:', err);
+    } finally {
+      setGeocoding(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!company) return;
@@ -187,6 +258,13 @@ export default function NewLoadPage() {
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
           <p>{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3 text-green-700">
+          <MapPin className="w-5 h-5 flex-shrink-0" />
+          <p>{success}</p>
         </div>
       )}
 
@@ -528,24 +606,63 @@ export default function NewLoadPage() {
               </div>
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#9B2640] text-white rounded-lg font-medium hover:bg-[#7a1e33] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Posting Load...
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  Post Load
-                </>
+            {/* Geocode & Submit Buttons */}
+            <div className="space-y-3">
+              {formData.pickup_city && formData.delivery_city && (
+                <button
+                  type="button"
+                  onClick={geocodeLocations}
+                  disabled={geocoding}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-[#06082C] text-[#06082C] rounded-lg font-medium hover:bg-[#06082C] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {geocoding ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Geocoding Locations...
+                    </>
+                  ) : (
+                    <>
+                      <MapPin className="w-5 h-5" />
+                      Preview Map Locations
+                    </>
+                  )}
+                </button>
               )}
-            </button>
+
+              {(formData.pickup_lat || formData.delivery_lat) && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
+                  <p className="font-medium mb-1">📍 Coordinates Set:</p>
+                  {formData.pickup_lat && (
+                    <p>Pickup: {Number(formData.pickup_lat).toFixed(4)}, {Number(formData.pickup_lng).toFixed(4)}</p>
+                  )}
+                  {formData.delivery_lat && (
+                    <p>Delivery: {Number(formData.delivery_lat).toFixed(4)}, {Number(formData.delivery_lng).toFixed(4)}</p>
+                  )}
+                </div>
+              )}
+
+              <p className="text-xs text-gray-500 text-center">
+                Locations are automatically geocoded when you post. Click &quot;Preview Map Locations&quot; to verify before posting.
+              </p>
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#9B2640] text-white rounded-lg font-medium hover:bg-[#7a1e33] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Posting Load...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Post Load
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </form>
