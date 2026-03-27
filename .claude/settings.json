@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c//**)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)",
+      "Read(//c/Users/Tiaan Botha/.claude/plugins/marketplaces/ui-ux-pro-max-skill/**)",
+      "Bash(python3 skills/ui-ux-pro-max/scripts/search.py \"admin dashboard bento grid saas logistics\" --design-system -f markdown)",
+      "Bash(python3 \"C:/Users/Tiaan Botha/.claude/plugins/marketplaces/ui-ux-pro-max-skill/src/ui-ux-pro-max/scripts/search.py\" \"admin dashboard bento grid saas logistics b2b\" --design-system -f markdown)",
+      "Bash(npx next:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Personal Projects\\NEW\\freight-link-network\\app\\blog"
+    ]
+  }
+}
