@@ -151,7 +151,7 @@ export default function LoadMap({ loads, height = "500px" }: LoadMapProps) {
 
             const pickupMarker = new mapboxgl.Marker({ element: pickupEl, anchor: "bottom" })
               .setLngLat([load.pickup_lng!, load.pickup_lat!])
-              .setPopup(new mapboxgl.Popup({ offset: [0, -4] }).setHTML(popupHtml))
+              .setPopup(new mapboxgl.Popup({ offset: [0, -4], className: 'popup-pickup' }).setHTML(popupHtml))
               .addTo(map);
 
             if (hasBoth) {
@@ -179,7 +179,7 @@ export default function LoadMap({ loads, height = "500px" }: LoadMapProps) {
 
             const deliveryMarker = new mapboxgl.Marker({ element: deliveryEl, anchor: "bottom" })
               .setLngLat([load.delivery_lng!, load.delivery_lat!])
-              .setPopup(new mapboxgl.Popup({ offset: [0, -4] }).setHTML(popupHtml))
+              .setPopup(new mapboxgl.Popup({ offset: [0, -4], className: 'popup-delivery' }).setHTML(popupHtml))
               .addTo(map);
 
             if (hasBoth) {
