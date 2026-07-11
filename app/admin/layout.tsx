@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
-        <div className="pt-16 md:pt-8 p-6 md:p-8 max-w-7xl mx-auto animate-fade-in">
+        <div className="pt-16 md:pt-8 p-6 md:p-8 max-w-7xl mx-auto animate-page-in">
           {children}
         </div>
       </main>

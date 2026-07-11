@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -19,6 +19,14 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+};
+
+// Explicit, deterministic viewport. We intentionally do NOT set
+// maximumScale/userScalable — pinch-to-zoom stays enabled for accessibility.
+// The iOS focus-zoom annoyance is fixed via 16px form controls in globals.css.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

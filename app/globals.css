@@ -1,5 +1,31 @@
 @import "tailwindcss";
 
+/* ── Mobile fundamentals ───────────────────────────────────────────────
+   Prevent mobile browsers from auto-inflating text on orientation change,
+   and guard against accidental horizontal scrolling from a stray wide element.
+   (Tables already scroll inside their own overflow-x wrappers.) */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  overflow-x: hidden;
+}
+
+/* Stop iOS Safari from auto-zooming when a form control is focused.
+   iOS zooms into any input/select/textarea whose font-size is < 16px, and
+   our design uses text-sm (14px) fields. On mobile we bump every form
+   control (and the Mapbox geocoder input) to 16px so focus never zooms.
+   Desktop keeps the tighter 14px look. Pinch-to-zoom stays enabled. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea,
+  .mapboxgl-ctrl-geocoder--input {
+    font-size: 16px !important;
+  }
+}
+
 @theme inline {
   --color-primary-blue: #06082C;
   --color-primary-blue-hover: #0a0e40;
@@ -8,6 +34,24 @@
 }
 
 /* Custom animations */
+
+/* Page-entry fade for dashboard layout wrappers. Opacity ONLY — deliberately
+   no transform. A transform on these wrappers would establish a containing
+   block that traps every `position: fixed` modal inside the content area
+   (offset from the sidebar, not full-height, mis-centered). Keep it transform-free. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-page-in {
+  animation: page-in 0.4s ease-out forwards;
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;

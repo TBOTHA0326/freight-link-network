@@ -52,7 +52,7 @@ export default function SupplierDashboard() {
         }
       />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total Loads" value={stats.total} icon={Package} color="#06082C" />
+        <StatCard label="Total Loads" value={stats.total} icon={Package} color="#06082C" highlight />
         <StatCard label="Pending Review" value={stats.pending} icon={Clock} color="#d97706" />
         <StatCard label="Approved" value={stats.approved} icon={CheckCircle2} color="#059669" />
         <StatCard label="In Transit" value={stats.inTransit} icon={TrendingUp} color="#3b82f6" />

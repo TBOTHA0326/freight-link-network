@@ -52,7 +52,7 @@ export default function TransporterDashboard() {
         }
       />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Available Loads" value={loads.length} icon={Package} color="#06082C" />
+        <StatCard label="Available Loads" value={loads.length} icon={Package} color="#06082C" highlight />
         <StatCard label="My Trucks" value={counts.trucks} icon={Truck} color="#059669" />
         <StatCard label="My Trailers" value={counts.trailers} icon={Layers} color="#3b82f6" />
         <StatCard label="My Drivers" value={counts.drivers} icon={Users} color="#d97706" />
