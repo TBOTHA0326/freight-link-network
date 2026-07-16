@@ -475,8 +475,15 @@ export async function generateMetadata({
   const post = POSTS[slug];
   if (!post) return {};
   return {
-    title: `${post.title} | Freight Link Network Blog`,
+    title: post.title,
     description: post.excerpt,
+    alternates: { canonical: `/blog/${slug}` },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description: post.excerpt,
+      url: `/blog/${slug}`,
+    },
   };
 }
 
