@@ -46,14 +46,12 @@ export const metadata: Metadata = {
     title: "Freight Link Network — South Africa's B2B Freight & Logistics Platform",
     description:
       "Connect with verified transporters and suppliers. Post loads, manage compliance, and move freight across South Africa and beyond.",
-    images: [{ url: "/FLNSITELOGO.png", alt: "Freight Link Network" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Freight Link Network — South Africa's B2B Freight & Logistics Platform",
     description:
       "Connect with verified transporters and suppliers across South Africa.",
-    images: ["/FLNSITELOGO.png"],
   },
   robots: {
     index: true,
