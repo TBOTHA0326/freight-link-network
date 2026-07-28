@@ -91,11 +91,15 @@ export default function LandingPage() {
     "Steel & Metals",
   ];
 
-  const stats = [
-    { value: "7", label: "Cross-Border Countries" },
+  const stats: { value: string; label: string; valueClass?: string }[] = [
     { value: "9", label: "SA Provinces" },
-    { value: "200+", label: "Verified Operators" },
+    { value: "7", label: "Cross-Border Countries" },
     { value: "100%", label: "Compliance Verified" },
+    {
+      value: "Road + Rail",
+      label: "Modes Engineered",
+      valueClass: "text-2xl md:text-3xl",
+    },
   ];
 
   const modes = [
@@ -344,7 +348,7 @@ export default function LandingPage() {
               href="/register"
               className="inline-flex items-center justify-center gap-2 bg-[#9B2640] hover:bg-[#7d1e33] text-white font-semibold px-8 py-4 rounded-xl transition-colors text-base"
             >
-              Get Started Free
+              Onboard with FLN
               <ArrowRight size={18} />
             </Link>
             <Link
@@ -353,6 +357,50 @@ export default function LandingPage() {
             >
               Talk to Our Engineers
             </Link>
+          </motion.div>
+
+          {/* Live network callout */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-10 flex justify-center"
+          >
+            <div className="inline-flex items-center gap-5 sm:gap-8 bg-white/8 border border-white/15 rounded-2xl px-6 sm:px-9 py-4 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="relative w-10 h-10 rounded-xl bg-[#9B2640]/25 border border-[#9B2640]/40 flex items-center justify-center flex-shrink-0">
+                  <Network size={18} className="text-white" />
+                  <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
+                  </span>
+                </div>
+                <div className="text-left">
+                  <p className="text-2xl md:text-3xl font-extrabold text-white leading-none">
+                    87
+                  </p>
+                  <p className="text-[11px] text-white/50 mt-1 uppercase tracking-wide">
+                    Verified Transporters
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-px h-10 bg-white/15" />
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
+                  <Truck size={18} className="text-white/75" />
+                </div>
+                <div className="text-left">
+                  <p className="text-2xl md:text-3xl font-extrabold text-white leading-none">
+                    497
+                  </p>
+                  <p className="text-[11px] text-white/50 mt-1 uppercase tracking-wide">
+                    Vehicles in the Network
+                  </p>
+                </div>
+              </div>
+            </div>
           </motion.div>
 
           {/* Stats bar */}
@@ -364,7 +412,9 @@ export default function LandingPage() {
           >
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                <p
+                  className={`${stat.valueClass ?? "text-3xl md:text-4xl"} font-extrabold text-white tracking-tight whitespace-nowrap`}
+                >
                   {stat.value}
                 </p>
                 <p className="text-xs text-white/45 mt-1.5 font-medium uppercase tracking-wide">
