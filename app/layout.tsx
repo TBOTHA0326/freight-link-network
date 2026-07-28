@@ -18,20 +18,22 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://f-ln.co.za";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Freight Link Network — South Africa's B2B Freight & Logistics Platform",
+    default: "Freight Link Network — Engineered Road, Rail & Intermodal Logistics",
     template: "%s | Freight Link Network",
   },
   description:
-    "Freight Link Network connects South African freight suppliers with verified transporters. Post loads, manage compliance documents, and move freight across South Africa and cross-border corridors.",
+    "Freight Link Network engineers road, rail and intermodal freight solutions across South Africa and seven cross-border corridors — designing the lowest-cost way to move your freight and executing it through a verified transport network.",
   keywords: [
-    "freight South Africa",
-    "logistics platform",
-    "load board",
-    "transporters",
-    "freight suppliers",
+    "logistics engineering South Africa",
+    "road rail intermodal",
+    "rail freight South Africa",
+    "road versus rail",
+    "freight solutions",
     "cross-border freight",
+    "intermodal logistics",
+    "cost per tonne",
+    "supply chain diagnostic",
     "trucking South Africa",
-    "freight matching",
   ],
   applicationName: "Freight Link Network",
   authors: [{ name: "Freight Link Network" }],
@@ -43,15 +45,15 @@ export const metadata: Metadata = {
     locale: "en_ZA",
     url: siteUrl,
     siteName: "Freight Link Network",
-    title: "Freight Link Network — South Africa's B2B Freight & Logistics Platform",
+    title: "Freight Link Network — Engineered Road, Rail & Intermodal Logistics",
     description:
-      "Connect with verified transporters and suppliers. Post loads, manage compliance, and move freight across South Africa and beyond.",
+      "We don't just move freight — we engineer the system that moves it. Road, rail and intermodal solutions across South Africa and beyond.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Freight Link Network — South Africa's B2B Freight & Logistics Platform",
+    title: "Freight Link Network — Engineered Road, Rail & Intermodal Logistics",
     description:
-      "Connect with verified transporters and suppliers across South Africa.",
+      "We engineer the lowest-cost road, rail and intermodal freight solutions across South Africa.",
   },
   robots: {
     index: true,
@@ -97,7 +99,7 @@ export default function RootLayout({
               url: siteUrl,
               logo: `${siteUrl}/FLNSITELOGO.png`,
               description:
-                "South Africa's B2B freight platform connecting verified suppliers and transporters.",
+                "Engineered road, rail and intermodal freight solutions across South Africa, delivered through a verified transport network.",
               areaServed: "ZA",
             }),
           }}

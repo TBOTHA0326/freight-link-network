@@ -11,20 +11,22 @@ import {
   ArrowRight,
   MapPin,
   CheckCircle2,
-  Building2,
-  Users,
   Globe,
   X,
   Phone,
-  FileText,
-  Clock,
-  TrendingUp,
   Zap,
   Star,
   Route,
-  Fuel,
-  BadgeCheck,
   BarChart3,
+  Train,
+  Scale,
+  Layers,
+  Warehouse,
+  Gauge,
+  Calculator,
+  Settings,
+  Network,
+  Stethoscope,
 } from "lucide-react";
 
 // ─── Animation variants ────────────────────────────────────────────────────
@@ -90,103 +92,179 @@ export default function LandingPage() {
   ];
 
   const stats = [
-    { value: "200+", label: "Active Transporters" },
-    { value: "2 000+", label: "Possible Loads" },
-    { value: "9", label: "Provinces Covered" },
-    { value: "6", label: "Countries Served" },
+    { value: "7", label: "Cross-Border Countries" },
+    { value: "9", label: "SA Provinces" },
+    { value: "200+", label: "Verified Operators" },
+    { value: "100%", label: "Compliance Verified" },
   ];
 
-  const oldWay = [
-    "Cold-calling dozens of truckers",
-    "Managing bookings via WhatsApp & spreadsheets",
-    "No visibility on truck compliance status",
-    "Chasing invoices and paper-based PODs",
-    "Unreliable load tracking and ETAs",
-    "No cross-border documentation support",
-  ];
-
-  const flnWay = [
-    "Browse a verified transporter network instantly",
-    "Post loads and receive interest in real time",
-    "All carriers verified — CIPC, PDP & tax clearance",
-    "Digital load management from post to delivery",
-    "Live load status and map tracking",
-    "Full cross-border corridor support",
-  ];
-
-  const features = [
+  const modes = [
     {
-      icon: Package,
-      title: "For Suppliers",
-      desc: "Post freight loads in minutes, upload compliance documents, monitor load status end-to-end, and manage your company profile — all from a single dashboard.",
+      icon: Truck,
+      title: "Road",
+      desc: "Flexible, fast and door-to-door. The right answer for shorter hauls, time-sensitive freight and lower volumes.",
       color: "#9B2640",
       bg: "#9B264010",
     },
     {
-      icon: Truck,
-      title: "For Transporters",
-      desc: "Browse approved loads, manage your full fleet — trucks, trailers, and drivers — upload fleet documents, and grow your logistics business across SA.",
+      icon: Train,
+      title: "Rail",
+      desc: "Dramatically lower cost per tonne over distance. The right answer for high-volume, long-haul and bulk commodities.",
       color: "#06082C",
       bg: "#06082C12",
     },
     {
-      icon: ShieldCheck,
-      title: "Verified & Compliant",
-      desc: "Every company on the platform is reviewed by our admin team. CIPC certificates, tax clearance, and PDP licences are checked before any account goes live.",
+      icon: Layers,
+      title: "Intermodal",
+      desc: "The best of both — first-mile road to the siding, rail for the long haul, last-mile road to the door. One engineered flow.",
       color: "#059669",
       bg: "#05966910",
     },
   ];
 
-  const steps = [
+  const commodityWay = [
+    "Book whatever truck is available",
+    "Road by default, every single time",
+    "No comparison of total delivered cost",
+    "Capacity guessed, not calculated",
+    "No corridor or feasibility study",
+    "Empty runs and standing time absorbed as cost",
+  ];
+
+  const engineeredWay = [
+    "Diagnose the operation before we quote",
+    "Compare road, rail and intermodal options",
+    "Design to the lowest total delivered cost",
+    "Capacity engineered — trucks, wagons, throughput",
+    "Corridor feasibility assessed up front",
+    "Executed through a verified transport network",
+  ];
+
+  const services = [
     {
-      icon: Users,
+      icon: Stethoscope,
+      title: "Supply-Chain Diagnostic",
+      desc: "Review the existing operation and identify cost, capacity and performance constraints.",
+    },
+    {
+      icon: Route,
+      title: "Corridor Feasibility Study",
+      desc: "Assess whether a proposed corridor is commercially and operationally viable.",
+    },
+    {
+      icon: Scale,
+      title: "Road-versus-Rail Analysis",
+      desc: "Compare total cost, transit time, capacity, infrastructure and risk across modes.",
+    },
+    {
+      icon: Layers,
+      title: "Intermodal Design",
+      desc: "Design first-mile road, terminal transfer, rail movement and last-mile delivery as one system.",
+    },
+    {
+      icon: Warehouse,
+      title: "Terminal & Siding Assessment",
+      desc: "Evaluate location, track access, loading methods, stockholding, equipment and throughput.",
+    },
+    {
+      icon: Gauge,
+      title: "Capacity Engineering",
+      desc: "Determine the trucks, wagons, train frequency, loading, warehouse and stockpile capacity required.",
+    },
+    {
+      icon: Calculator,
+      title: "Cost Engineering",
+      desc: "Calculate cost per tonne and per kilometre, handling, storage, standing time and total delivered cost.",
+    },
+    {
+      icon: Settings,
+      title: "Implementation Management",
+      desc: "Convert the approved design into a fully running operation.",
+    },
+  ];
+
+  const capacityItems = [
+    "Trucks required",
+    "Wagons required",
+    "Train frequency",
+    "Loading capacity",
+    "Warehouse capacity",
+    "Stockpile size",
+    "Labour & equipment",
+  ];
+
+  const costItems = [
+    "Cost per tonne",
+    "Cost per kilometre",
+    "Handling cost",
+    "Storage cost",
+    "Standing-time exposure",
+    "Rail vs road comparison",
+    "Total delivered cost",
+    "Margin & cash-flow",
+  ];
+
+  const process = [
+    {
+      icon: Stethoscope,
       step: "01",
-      title: "Register",
-      desc: "Create your account in under two minutes. Choose your role — freight supplier or transporter.",
+      title: "Diagnose",
+      desc: "We review your product, volumes, routes, infrastructure and commercial requirements.",
     },
     {
-      icon: Building2,
+      icon: Layers,
       step: "02",
-      title: "Setup Your Company",
-      desc: "Complete your company profile and upload the required compliance documents for verification.",
+      title: "Design",
+      desc: "We compare road, rail and intermodal, then design the optimal system end to end.",
     },
     {
-      icon: BadgeCheck,
+      icon: Gauge,
       step: "03",
-      title: "Get Verified",
-      desc: "Our team reviews your submission, approves your documents, and activates your account.",
+      title: "Engineer",
+      desc: "We calculate the capacity and cost — trucks, wagons, throughput and total delivered cost.",
     },
     {
-      icon: MapPin,
+      icon: Settings,
       step: "04",
-      title: "Start Moving Freight",
-      desc: "Post loads, browse freight opportunities, and connect with partners across South Africa and beyond.",
+      title: "Implement",
+      desc: "We deploy the verified network and convert the design into a running operation.",
     },
+  ];
+
+  const networkProvides = [
+    "Road capacity",
+    "Specialist trailers",
+    "Cross-border capability",
+    "First- & last-mile transport",
+    "Rapid capacity deployment",
+    "Route-specific operators",
   ];
 
   const saReasons = [
     {
-      icon: Fuel,
-      title: "Rising Diesel Costs",
-      desc: "Empty return trips cost the SA trucking industry billions annually. FLN matches loads to routes, reducing dead kilometres.",
+      icon: Scale,
+      title: "Lowest Total Delivered Cost",
+      desc: "We compare road, rail and intermodal to find the cheapest reliable answer — not just the first available truck.",
+    },
+    {
+      icon: Train,
+      title: "Rail Where It Wins",
+      desc: "For high-volume and long-haul freight, rail can dramatically cut cost per tonne. We design the road-rail-road flow around it.",
     },
     {
       icon: Route,
       title: "Cross-Border Corridors",
-      desc: "Supporting freight routes to Namibia, Zimbabwe, Mozambique, Botswana, Lesotho, and Eswatini — the region's busiest corridors.",
-    },
-    {
-      icon: FileText,
-      title: "CIPC & Compliance First",
-      desc: "SA-specific compliance built in — CIPC certificates, PDP licences, roadworthy certificates, and tax clearance are mandatory.",
+      desc: "Road and rail solutions across Namibia, Zimbabwe, Zambia, Mozambique, Botswana, Lesotho and Eswatini.",
     },
     {
       icon: BarChart3,
-      title: "Fragmented Industry",
-      desc: "Over 80% of SA freight is moved by road, yet the sector remains highly fragmented. FLN creates a connected, trusted network.",
+      title: "Engineered, Not Guessed",
+      desc: "Capacity and cost are calculated up front — trucks, wagons, throughput and total delivered cost.",
     },
   ];
+
+  const crossBorder =
+    "SA · Namibia · Zimbabwe · Zambia · Mozambique · Botswana · Lesotho · Eswatini";
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -201,10 +279,10 @@ export default function LandingPage() {
 
         {/* Decorative floating icons */}
         <FloatingIcon icon={Truck} className="w-14 h-14 top-28 left-[8%]" delay={0} size={24} />
-        <FloatingIcon icon={Package} className="w-12 h-12 top-40 right-[10%]" delay={1.2} size={20} />
+        <FloatingIcon icon={Train} className="w-12 h-12 top-40 right-[10%]" delay={1.2} size={22} />
         <FloatingIcon icon={MapPin} className="w-10 h-10 top-64 left-[18%]" delay={0.6} size={18} />
         <FloatingIcon icon={Route} className="w-12 h-12 top-48 right-[22%]" delay={2} size={20} />
-        <FloatingIcon icon={ShieldCheck} className="w-11 h-11 bottom-32 left-[12%]" delay={1.5} size={18} />
+        <FloatingIcon icon={Package} className="w-11 h-11 bottom-32 left-[12%]" delay={1.5} size={18} />
         <FloatingIcon icon={Globe} className="w-10 h-10 bottom-24 right-[14%]" delay={0.3} size={18} />
 
         {/* Grid dot pattern overlay */}
@@ -225,8 +303,8 @@ export default function LandingPage() {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 bg-white/8 text-white/75 text-sm px-4 py-1.5 rounded-full mb-8 border border-white/15"
           >
-            <Globe size={14} />
-            South Africa&apos;s Leading B2B Logistics Platform
+            <Network size={14} />
+            Road · Rail · Intermodal — Engineered Logistics
           </motion.div>
 
           {/* Headline */}
@@ -234,10 +312,12 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-[1.05] tracking-tight"
+            className="text-4xl md:text-6xl font-extrabold text-white mb-6 leading-[1.08] tracking-tight"
           >
-            Connect Freight.{" "}
-            <span className="text-[#9B2640]">Move Smarter.</span>
+            We Don&apos;t Just Move Freight.{" "}
+            <span className="text-[#9B2640]">
+              We Engineer the System That Moves It.
+            </span>
           </motion.h1>
 
           {/* Sub-headline */}
@@ -247,9 +327,10 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg md:text-xl text-white/65 mb-10 max-w-2xl mx-auto leading-relaxed"
           >
-            Freight Link Network connects South African suppliers with verified,
-            compliant transporters. Post loads, find trucks, and track shipments
-            — all in one trusted platform.
+            Every logistics challenge is different. FLN evaluates your product,
+            route, infrastructure, volume and commercial requirements — then
+            designs the right road, rail or intermodal solution and executes it
+            through a verified transport network.
           </motion.p>
 
           {/* CTAs */}
@@ -267,10 +348,10 @@ export default function LandingPage() {
               <ArrowRight size={18} />
             </Link>
             <Link
-              href="/login"
+              href="/contact"
               className="inline-flex items-center justify-center gap-2 bg-white/8 hover:bg-white/15 text-white font-semibold px-8 py-4 rounded-xl border border-white/20 transition-colors text-base"
             >
-              Sign In to Your Account
+              Talk to Our Engineers
             </Link>
           </motion.div>
 
@@ -321,7 +402,7 @@ export default function LandingPage() {
             {...fadeInUp}
             className="text-center text-sm font-semibold text-gray-400 uppercase tracking-widest mb-8"
           >
-            Trusted by companies across South Africa
+            Engineering freight solutions across South Africa
           </motion.p>
           <motion.div
             initial={{ opacity: 0 }}
@@ -346,22 +427,95 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── PROBLEM / SOLUTION ───────────────────────────────────────── */}
+      {/* ─── MODES: ROAD + RAIL TOGETHER ──────────────────────────────── */}
       <section className="py-24 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <motion.div {...fadeInUp} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
-              Freight Management,{" "}
-              <span className="text-[#9B2640]">Reimagined</span>
+              We Bring Road and Rail{" "}
+              <span className="text-[#9B2640]">Together</span>
+            </h2>
+            <p className="text-gray-500 max-w-2xl mx-auto">
+              Most freight defaults to road. We test every option — road, rail,
+              or an intermodal mix — and engineer the combination that delivers
+              the lowest total cost.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            {modes.map((m) => (
+              <motion.div
+                key={m.title}
+                variants={cardVariant}
+                className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-6"
+                  style={{ backgroundColor: m.bg }}
+                >
+                  <m.icon size={22} style={{ color: m.color }} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">
+                  {m.title}
+                </h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{m.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Rail, opened up — for the smaller players */}
+          <motion.div
+            {...fadeInUp}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mt-8 bg-[#06082C] rounded-2xl p-8 md:p-10 relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(155,38,64,0.18),_transparent_60%)]" />
+            <div className="relative flex flex-col md:flex-row md:items-center gap-6">
+              <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
+                <Train size={26} className="text-white" />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-2 bg-white/8 text-white/70 text-xs font-semibold px-3 py-1 rounded-full mb-3 border border-white/15 uppercase tracking-wider">
+                  Rail, opened up
+                </div>
+                <h3 className="text-xl md:text-2xl font-extrabold text-white mb-2 leading-snug">
+                  We make rail work for the smaller operator
+                </h3>
+                <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-3xl">
+                  Rail has traditionally been the preserve of high-volume
+                  shippers with dedicated contracts and their own sidings. FLN
+                  aggregates and engineers volume so mid-sized and smaller
+                  operations can access rail economics that were previously out
+                  of reach — without needing the scale to go it alone.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── COMMODITY vs ENGINEERED ──────────────────────────────────── */}
+      <section className="py-24 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <motion.div {...fadeInUp} className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+              Freight, Engineered —{" "}
+              <span className="text-[#9B2640]">Not Just Booked</span>
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto">
-              The South African logistics industry has been running on phone calls
-              and spreadsheets for too long. There&apos;s a better way.
+              Most logistics is booked. Ours is designed. We start with the
+              problem, then engineer the cheapest, most reliable way to solve it.
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Old Way */}
+            {/* Commodity */}
             <motion.div
               {...fadeInUp}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -373,13 +527,15 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-red-400 uppercase tracking-wider">
-                    Before FLN
+                    The Old Way
                   </p>
-                  <h3 className="text-lg font-bold text-gray-900">The Old Way</h3>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    The Commodity Approach
+                  </h3>
                 </div>
               </div>
               <ul className="space-y-3">
-                {oldWay.map((item) => (
+                {commodityWay.map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <div className="mt-0.5 w-5 h-5 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
                       <X size={12} className="text-red-500" />
@@ -390,7 +546,7 @@ export default function LandingPage() {
               </ul>
             </motion.div>
 
-            {/* FLN Way */}
+            {/* Engineered */}
             <motion.div
               {...fadeInUp}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -402,13 +558,15 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-[#9B2640] uppercase tracking-wider">
-                    With FLN
+                    The FLN Way
                   </p>
-                  <h3 className="text-lg font-bold text-white">The FLN Way</h3>
+                  <h3 className="text-lg font-bold text-white">
+                    The Engineered Approach
+                  </h3>
                 </div>
               </div>
               <ul className="space-y-3">
-                {flnWay.map((item) => (
+                {engineeredWay.map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
                       <CheckCircle2 size={12} className="text-emerald-400" />
@@ -422,16 +580,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── FEATURES ─────────────────────────────────────────────────── */}
-      <section id="features" className="py-24 px-4 bg-white">
+      {/* ─── SERVICES ─────────────────────────────────────────────────── */}
+      <section id="services" className="py-24 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <motion.div {...fadeInUp} className="text-center mb-16">
+            <p className="text-xs font-bold text-[#9B2640] uppercase tracking-widest mb-3">
+              What We Do
+            </p>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
-              Everything You Need
+              From Diagnostic to Running Operation
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto">
-              A complete logistics platform purpose-built for the South African
-              market — from first load post to final delivery.
+              A complete engineering scope — we design the solution and see it
+              through to implementation.
             </p>
           </motion.div>
 
@@ -440,44 +601,118 @@ export default function LandingPage() {
             initial="initial"
             whileInView="whileInView"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           >
-            {features.map((f) => (
+            {services.map((s) => (
               <motion.div
-                key={f.title}
+                key={s.title}
                 variants={cardVariant}
-                className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow group"
+                className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-6"
-                  style={{ backgroundColor: f.bg }}
-                >
-                  <f.icon size={22} style={{ color: f.color }} />
+                <div className="w-11 h-11 rounded-xl bg-[#06082C] flex items-center justify-center mb-5">
+                  <s.icon size={20} className="text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-3">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
-                <div
-                  className="mt-6 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                  style={{ color: f.color }}
-                >
-                  Learn more <ArrowRight size={13} />
-                </div>
+                <h3 className="text-base font-bold text-gray-900 mb-2 leading-snug">
+                  {s.title}
+                </h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─────────────────────────────────────────────── */}
-      <section id="how-it-works" className="py-24 px-4 bg-gray-50">
+      {/* ─── CAPACITY & COST ENGINEERING ──────────────────────────────── */}
+      <section className="py-24 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <motion.div {...fadeInUp} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
-              Up and Running in Minutes
+              Engineered Down to the Tonne
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto">
-              Our streamlined onboarding gets you from sign-up to first load in
-              four simple steps.
+              Every solution is quantified before anything moves. No guesswork —
+              just the numbers that determine whether it works.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Capacity engineering */}
+            <motion.div
+              {...fadeInUp}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="bg-gray-50 rounded-2xl border border-gray-100 p-8"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-11 h-11 rounded-xl bg-[#06082C] flex items-center justify-center">
+                  <Gauge size={20} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-[#9B2640] uppercase tracking-wider">
+                    Capacity Engineering
+                  </p>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    We determine
+                  </h3>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                {capacityItems.map((item) => (
+                  <div key={item} className="flex items-center gap-2.5">
+                    <CheckCircle2
+                      size={16}
+                      className="text-[#06082C] flex-shrink-0"
+                    />
+                    <span className="text-sm text-gray-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Cost engineering */}
+            <motion.div
+              {...fadeInUp}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="bg-gray-50 rounded-2xl border border-gray-100 p-8"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-11 h-11 rounded-xl bg-[#9B2640] flex items-center justify-center">
+                  <Calculator size={20} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-[#9B2640] uppercase tracking-wider">
+                    Cost Engineering
+                  </p>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    We calculate
+                  </h3>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                {costItems.map((item) => (
+                  <div key={item} className="flex items-center gap-2.5">
+                    <CheckCircle2
+                      size={16}
+                      className="text-[#9B2640] flex-shrink-0"
+                    />
+                    <span className="text-sm text-gray-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PROCESS ──────────────────────────────────────────────────── */}
+      <section id="process" className="py-24 px-4 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <motion.div {...fadeInUp} className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+              How We Engineer a Solution
+            </h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              A structured path from understanding the problem to running the
+              operation.
             </p>
           </motion.div>
 
@@ -492,22 +727,25 @@ export default function LandingPage() {
               viewport={{ once: true }}
               className="grid grid-cols-1 md:grid-cols-4 gap-8"
             >
-              {steps.map((s, i) => (
+              {process.map((s, i) => (
                 <motion.div
                   key={s.step}
                   variants={cardVariant}
                   transition={{ duration: 0.5, delay: i * 0.12 }}
                   className="text-center relative"
                 >
-                  {/* Step number circle */}
                   <div className="w-16 h-16 bg-[#06082C] rounded-2xl flex items-center justify-center mx-auto mb-5 relative z-10 shadow-md">
                     <s.icon size={26} className="text-white" />
                   </div>
                   <div className="text-xs font-extrabold text-[#9B2640] mb-1.5 tracking-widest">
                     STEP {s.step}
                   </div>
-                  <h3 className="text-base font-bold text-gray-900 mb-2">{s.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>
+                  <h3 className="text-base font-bold text-gray-900 mb-2">
+                    {s.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">
+                    {s.desc}
+                  </p>
                 </motion.div>
               ))}
             </motion.div>
@@ -515,7 +753,77 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── WHY SA NEEDS THIS ────────────────────────────────────────── */}
+      {/* ─── EXECUTION NETWORK ────────────────────────────────────────── */}
+      <section className="py-24 px-4 bg-[#06082C] relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(155,38,64,0.18),_transparent_55%)]" />
+        <div
+          className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, white 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        />
+        <div className="relative max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            <motion.div {...fadeInUp}>
+              <div className="inline-flex items-center gap-2 bg-white/8 text-white/70 text-xs font-semibold px-3 py-1 rounded-full mb-5 border border-white/15 uppercase tracking-wider">
+                <Network size={12} />
+                The Execution Layer
+              </div>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-5 leading-snug">
+                A Verified Execution Network
+              </h2>
+              <p className="text-white/60 leading-relaxed mb-4">
+                FLN maintains a verified execution network that lets engineered
+                logistics solutions be implemented at scale. The network is not
+                the product — it is how we deliver the design, integrated with
+                rail for long-haul and bulk movements.
+              </p>
+              <p className="text-white/45 text-sm leading-relaxed mb-8">
+                Every operator is reviewed before activation — CIPC registration,
+                tax clearance and driver PDPs — so every solution is executed by
+                partners you can trust.
+              </p>
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 bg-[#9B2640] hover:bg-[#7d1e33] text-white font-semibold px-6 py-3.5 rounded-xl transition-colors"
+              >
+                Operate With FLN — Join the Network
+                <ArrowRight size={16} />
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="grid grid-cols-2 gap-4"
+            >
+              {networkProvides.map((item, i) => {
+                const icons = [Truck, Package, Globe, MapPin, Zap, Route];
+                const Icon = icons[i % icons.length];
+                return (
+                  <div
+                    key={item}
+                    className="bg-white/5 border border-white/10 rounded-2xl p-5"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-3">
+                      <Icon size={18} className="text-white/70" />
+                    </div>
+                    <p className="text-sm font-semibold text-white/85 leading-snug">
+                      {item}
+                    </p>
+                  </div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── WHY SA / CORRIDORS ───────────────────────────────────────── */}
       <section className="py-24 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -525,14 +833,13 @@ export default function LandingPage() {
                 Built for South Africa
               </p>
               <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-5 leading-snug">
-                Why SA&apos;s Road Freight Industry Needs FLN
+                Road, Rail &amp; Every Corridor
               </h2>
               <p className="text-gray-500 mb-8 leading-relaxed">
-                South Africa moves over 80% of its goods by road. With rising
-                diesel costs, regulatory complexity, and a fragmented carrier
-                market, the industry urgently needs a trusted digital
-                infrastructure layer. Freight Link Network was built to provide
-                exactly that.
+                South Africa moves over 80% of its goods by road, yet for the
+                right freight, rail is far cheaper per tonne. We engineer the
+                balance — across all nine provinces and seven cross-border
+                corridors — to deliver the lowest total cost.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {saReasons.map((reason, i) => (
@@ -568,25 +875,23 @@ export default function LandingPage() {
               transition={{ duration: 0.7 }}
               className="relative"
             >
-              {/* Main image placeholder */}
               <div className="bg-[#06082C] rounded-3xl aspect-[4/3] flex items-center justify-center relative overflow-hidden shadow-2xl">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(155,38,64,0.3),_transparent_60%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_rgba(10,14,64,0.6),_transparent_60%)]" />
-                {/* Route visualisation placeholder */}
                 <div className="relative z-10 text-center px-8">
-                  <div className="flex justify-center mb-4">
-                    <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10">
-                      <Route size={32} className="text-white/60" />
+                  <div className="flex justify-center gap-3 mb-4">
+                    <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10">
+                      <Truck size={26} className="text-white/60" />
+                    </div>
+                    <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10">
+                      <Train size={26} className="text-white/60" />
                     </div>
                   </div>
                   <p className="text-white/50 text-sm font-medium">
-                    Cross-border freight corridors
+                    Road, rail &amp; intermodal corridors
                   </p>
-                  <p className="text-white/30 text-xs mt-1">
-                    SA · Namibia · Zimbabwe · Mozambique · Botswana · Lesotho · Eswatini
-                  </p>
+                  <p className="text-white/30 text-xs mt-1">{crossBorder}</p>
                 </div>
-                {/* Decorative dots */}
                 <div
                   className="absolute inset-0 opacity-[0.04]"
                   style={{
@@ -606,11 +911,13 @@ export default function LandingPage() {
                 className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl border border-gray-100 px-5 py-4 flex items-center gap-3"
               >
                 <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
-                  <TrendingUp size={18} className="text-emerald-600" />
+                  <Scale size={18} className="text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 font-medium">Loads this month</p>
-                  <p className="text-lg font-extrabold text-gray-900">+247</p>
+                  <p className="text-xs text-gray-400 font-medium">
+                    Total delivered cost
+                  </p>
+                  <p className="text-lg font-extrabold text-gray-900">Modelled</p>
                 </div>
               </motion.div>
 
@@ -622,11 +929,13 @@ export default function LandingPage() {
                 className="absolute -top-6 -right-6 bg-white rounded-2xl shadow-xl border border-gray-100 px-5 py-4 flex items-center gap-3"
               >
                 <div className="w-10 h-10 bg-[#9B2640]/10 rounded-xl flex items-center justify-center">
-                  <Clock size={18} className="text-[#9B2640]" />
+                  <Train size={18} className="text-[#9B2640]" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 font-medium">Avg. match time</p>
-                  <p className="text-lg font-extrabold text-gray-900">&lt; 2 hrs</p>
+                  <p className="text-xs text-gray-400 font-medium">
+                    Road + Rail
+                  </p>
+                  <p className="text-lg font-extrabold text-gray-900">Compared</p>
                 </div>
               </motion.div>
             </motion.div>
@@ -638,7 +947,6 @@ export default function LandingPage() {
       <section className="py-24 px-4 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div {...fadeInUp}>
-            {/* Stars */}
             <div className="flex justify-center gap-1 mb-8">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -650,10 +958,10 @@ export default function LandingPage() {
             </div>
 
             <blockquote className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug mb-8">
-              &ldquo;Before FLN, finding a compliant, reliable transporter for our
-              cross-border loads took days of phone calls. Now we post a load and
-              have verified interest within hours. It&apos;s completely changed
-              how we operate.&rdquo;
+              &ldquo;FLN didn&apos;t just find us a truck — they redesigned our
+              whole outbound flow. Moving the long-haul volume onto rail and
+              keeping road for the last mile dropped our cost per tonne and
+              solved our capacity problem.&rdquo;
             </blockquote>
 
             <div className="flex items-center justify-center gap-3">
@@ -661,8 +969,12 @@ export default function LandingPage() {
                 KM
               </div>
               <div className="text-left">
-                <p className="text-sm font-bold text-gray-900">Kgomotso Mokoena</p>
-                <p className="text-xs text-gray-500">Logistics Manager · Mining Supplier, Gauteng</p>
+                <p className="text-sm font-bold text-gray-900">
+                  Kgomotso Mokoena
+                </p>
+                <p className="text-xs text-gray-500">
+                  Logistics Manager · Mining Supplier, Gauteng
+                </p>
               </div>
             </div>
           </motion.div>
@@ -671,7 +983,6 @@ export default function LandingPage() {
 
       {/* ─── CTA BANNER ───────────────────────────────────────────────── */}
       <section className="py-24 px-4 bg-[#06082C] relative overflow-hidden">
-        {/* Background accents */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(155,38,64,0.2),_transparent_55%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(10,14,64,0.5),_transparent_55%)]" />
         <div
@@ -690,25 +1001,26 @@ export default function LandingPage() {
               Free to register
             </div>
             <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-5 leading-tight">
-              Ready to Move Freight Smarter?
+              Let&apos;s Engineer Your Logistics Solution
             </h2>
             <p className="text-white/55 mb-10 text-lg max-w-xl mx-auto leading-relaxed">
-              Join hundreds of South African businesses already using Freight Link
-              Network to connect, verify, and move freight across the continent.
+              Tell us what you move, where, and how much. We&apos;ll design the
+              road, rail or intermodal solution that delivers it for the lowest
+              total cost — and execute it through our verified network.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/register"
                 className="inline-flex items-center justify-center gap-2 bg-[#9B2640] hover:bg-[#7d1e33] text-white font-semibold px-8 py-4 rounded-xl transition-colors text-base"
               >
-                Create Free Account
+                Get Started Free
                 <ArrowRight size={18} />
               </Link>
               <Link
-                href="/login"
+                href="/contact"
                 className="inline-flex items-center justify-center gap-2 bg-white/8 hover:bg-white/15 text-white font-semibold px-8 py-4 rounded-xl border border-white/20 transition-colors text-base"
               >
-                Sign In
+                Talk to Our Engineers
               </Link>
             </div>
           </motion.div>
